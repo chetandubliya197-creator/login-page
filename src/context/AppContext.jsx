@@ -1,219 +1,316 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export const AppContext = createContext();
 
-export function AppProvider({ children }) {
+const INITIAL_STUDENTS = [
+  {
+    id: 'std_002',
+    name: 'Rahul Verma',
+    email: 'rahul.verma@college.edu',
+    collegeId: 'COL2024098',
+    anonUsername: 'DeltaRunner_21',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul',
+    branch: 'Computer Science',
+    year: '3rd Year',
+    bio: 'Competitive coder. Love Node.js and systems architecture.',
+    connectionStatus: 'not_connected',
+    interests: ['Coding', 'Gaming', 'Algorithms'],
+    isOnline: true,
+  },
+  {
+    id: 'std_003',
+    name: 'Priya Singh',
+    email: 'priya.singh@college.edu',
+    collegeId: 'COL2024105',
+    anonUsername: 'QuantumDev_99',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
+    branch: 'Electronics',
+    year: '3rd Year',
+    bio: 'IoT enthusiast & embedded systems developer.',
+    connectionStatus: 'connected',
+    interests: ['Arduino', 'Robotics', 'WebDev'],
+    isOnline: true,
+  },
+  {
+    id: 'std_004',
+    name: 'Amit Patel',
+    email: 'amit.patel@college.edu',
+    collegeId: 'COL2025012',
+    anonUsername: 'NeonRider_17',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amit',
+    branch: 'Mechanical',
+    year: '2nd Year',
+    bio: 'CAD designer and motor sports lover.',
+    connectionStatus: 'pending',
+    interests: ['CAD', 'F1', 'Automobile'],
+    isOnline: false,
+  },
+  {
+    id: 'std_005',
+    name: 'Sneha Sharma',
+    email: 'sneha.sharma@college.edu',
+    collegeId: 'COL2024045',
+    anonUsername: 'CyberSage_08',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sneha',
+    branch: 'Information Technology',
+    year: '3rd Year',
+    bio: 'Cybersecurity learner. Pentesting and Linux are life.',
+    connectionStatus: 'connected',
+    interests: ['Cybersecurity', 'Linux', 'Python'],
+    isOnline: true,
+  },
+  {
+    id: 'std_006',
+    name: 'Arjun Mehta',
+    email: 'arjun.mehta@college.edu',
+    collegeId: 'COL2024210',
+    anonUsername: 'PhoenixByte_33',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun',
+    branch: 'Civil Engineering',
+    year: '4th Year',
+    bio: 'Structural design nerd. AutoCAD is my canvas.',
+    connectionStatus: 'not_connected',
+    interests: ['AutoCAD', 'Architecture', 'Photography'],
+    isOnline: false,
+  },
+  {
+    id: 'std_007',
+    name: 'Riya Kapoor',
+    email: 'riya.kapoor@college.edu',
+    collegeId: 'COL2025033',
+    anonUsername: 'NovaStar_55',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Riya',
+    branch: 'Computer Science',
+    year: '2nd Year',
+    bio: 'ML enthusiast. Currently learning PyTorch and data viz.',
+    connectionStatus: 'not_connected',
+    interests: ['Machine Learning', 'Python', 'Data Science'],
+    isOnline: true,
+  },
+  {
+    id: 'std_008',
+    name: 'Vikram Nair',
+    email: 'vikram.nair@college.edu',
+    collegeId: 'COL2024077',
+    anonUsername: 'StealthCoder_09',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram',
+    branch: 'Electronics',
+    year: '4th Year',
+    bio: 'Embedded systems and VLSI. Love building low-level stuff.',
+    connectionStatus: 'not_connected',
+    interests: ['VLSI', 'Arduino', 'PCB Design'],
+    isOnline: false,
+  },
+  {
+    id: 'std_009',
+    name: 'Pooja Joshi',
+    email: 'pooja.joshi@college.edu',
+    collegeId: 'COL2025067',
+    anonUsername: 'PixelDreamer_11',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Pooja',
+    branch: 'Information Technology',
+    year: '2nd Year',
+    bio: 'UI/UX designer who codes. Figma is my second home.',
+    connectionStatus: 'not_connected',
+    interests: ['UI/UX', 'Figma', 'React'],
+    isOnline: true,
+  },
+  {
+    id: 'std_010',
+    name: 'Karan Gupta',
+    email: 'karan.gupta@college.edu',
+    collegeId: 'COL2024189',
+    anonUsername: 'TurboHack_77',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karan',
+    branch: 'Computer Science',
+    year: '3rd Year',
+    bio: 'Open source contributor. Loves competitive programming.',
+    connectionStatus: 'not_connected',
+    interests: ['Open Source', 'C++', 'Competitive Programming'],
+    isOnline: true,
+  },
+  {
+    id: 'std_011',
+    name: 'Ananya Reddy',
+    email: 'ananya.reddy@college.edu',
+    collegeId: 'COL2025088',
+    anonUsername: 'CloudMind_22',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya',
+    branch: 'Mechanical',
+    year: '1st Year',
+    bio: 'Robotics club member. Drone enthusiast and maker.',
+    connectionStatus: 'not_connected',
+    interests: ['Drones', 'Robotics', 'CAD'],
+    isOnline: false,
+  },
+];
 
-  const [currentUser, setCurrentUser] = useState(null);
+const INITIAL_SOCIETIES = [
+  { id: 'soc_coding', name: 'Coding Society', description: 'Algorithms, Hackathons, Open Source', membersCount: 142, joined: true, icon: '💻' },
+  { id: 'soc_robotics', name: 'Robotics Club', description: 'Arduino, Drone design, Hardware fabrication', membersCount: 88, joined: false, icon: '🤖' },
+  { id: 'soc_cultural', name: 'Cultural Society', description: 'Music, Drama, Event organisation', membersCount: 110, joined: false, icon: '🎭' },
+  { id: 'soc_ml', name: 'AI & ML Club', description: 'Machine Learning, Data Science, Deep Learning', membersCount: 76, joined: false, icon: '🧠' },
+  { id: 'soc_cyber', name: 'CyberSec Club', description: 'Ethical Hacking, CTF, Network Security', membersCount: 54, joined: true, icon: '🔐' },
+  { id: 'soc_photo', name: 'Photography Club', description: 'Campus shoots, Editing, Reels & Shorts', membersCount: 63, joined: false, icon: '📸' },
+];
+
+const INITIAL_ANNOUNCEMENTS = [
+  { id: 'ann_1', societyId: 'soc_coding', title: 'Internal Hackathon Next Week', text: 'Registrations close this Sunday. Prizes up to ₹10K!', date: 'Today', isPinned: true },
+  { id: 'ann_2', societyId: 'soc_robotics', title: 'RoboWars Workshop', text: 'Learn to build line follower bots. Venue: Labs 3, Friday.', date: 'Yesterday', isPinned: false },
+  { id: 'ann_3', societyId: 'soc_ml', title: 'Guest Lecture — Google Engineer', text: 'Join us this Thursday at 4 PM in Seminar Hall 2. Topic: LLMs in Production.', date: 'Today', isPinned: true },
+  { id: 'ann_4', societyId: 'soc_cyber', title: 'CTF Competition — Register Now', text: 'College inter-CTF starts Friday midnight. Teams of 2-3. Prizes: ₹5K + goodies.', date: '2 days ago', isPinned: false },
+];
+
+const INITIAL_MESSAGES = [
+  { id: 'msg_1', senderId: 'std_002', text: 'Hey guys! Anyone up for the Hackathon registrations?', timestamp: '9:30 PM', reactions: [] },
+  { id: 'msg_2', senderId: 'std_003', text: 'Yes! I was looking for a teammate who knows React.', timestamp: '9:32 PM', reactions: [] },
+  { id: 'msg_3', senderId: 'std_005', text: 'College server is down again. Anyone else can\'t open portals?', timestamp: '9:45 PM', reactions: [] },
+  { id: 'msg_4', senderId: 'std_007', text: 'Which ML library is everyone using for the semester project?', timestamp: '9:50 PM', reactions: [] },
+  { id: 'msg_5', senderId: 'std_010', text: 'Just submitted my first open source PR 🎉 took 3 weeks lol', timestamp: '10:01 PM', reactions: [{ emoji: '👍', userId: 'std_003' }] },
+];
+
+const INITIAL_PRIVATE_MESSAGES = [
+  { id: 'pm_1', conversationId: 'std_003', senderId: 'std_003', text: 'Hey, are you free for the project meeting?', timestamp: '10:00 AM' },
+  { id: 'pm_2', conversationId: 'std_003', senderId: 'std_001', text: 'Yes, around 2 PM works for me.', timestamp: '10:05 AM' },
+];
+
+export function AppProvider({ children }) {
+  const [currentUser, setCurrentUser] = useLocalStorage('cp_user', null);
+  const [students, setStudents] = useLocalStorage('cp_students', INITIAL_STUDENTS);
+  const [societies, setSocieties] = useLocalStorage('cp_societies', INITIAL_SOCIETIES);
+  const [globalMessages, setGlobalMessages] = useLocalStorage('cp_global_msgs', INITIAL_MESSAGES);
+  const [privateMessages, setPrivateMessages] = useLocalStorage('cp_private_msgs', INITIAL_PRIVATE_MESSAGES);
 
   const [activeTab, setActiveTab] = useState('chat');
+  const [toast, setToast] = useState(null);
 
-  const [students, setStudents] = useState([
-    {
-      id: 'std_002',
-      name: 'Rahul Verma',
-      email: 'rahul.verma@college.edu',
-      collegeId: 'COL2024098',
-      anonUsername: 'DeltaRunner_21',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul',
-      branch: 'Computer Science',
-      year: '3rd Year',
-      bio: 'Competitive coder. Love Node.js and systems architecture.',
-      connectionStatus: 'not_connected',
-      interests: ['Coding', 'Gaming', 'Algorithms']
-    },
-    {
-      id: 'std_003',
-      name: 'Priya Singh',
-      email: 'priya.singh@college.edu',
-      collegeId: 'COL2024105',
-      anonUsername: 'QuantumDev_99',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
-      branch: 'Electronics',
-      year: '3rd Year',
-      bio: 'IoT enthusiast & embedded systems developer.',
-      connectionStatus: 'connected',
-      interests: ['Arduino', 'Robotics', 'WebDev']
-    },
-    {
-      id: 'std_004',
-      name: 'Amit Patel',
-      email: 'amit.patel@college.edu',
-      collegeId: 'COL2025012',
-      anonUsername: 'NeonRider_17',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amit',
-      branch: 'Mechanical',
-      year: '2nd Year',
-      bio: 'CAD designer and motor sports lover.',
-      connectionStatus: 'pending',
-      interests: ['CAD', 'F1', 'Automobile']
-    },
-    {
-      id: 'std_005',
-      name: 'Sneha Sharma',
-      email: 'sneha.sharma@college.edu',
-      collegeId: 'COL2024045',
-      anonUsername: 'CyberSage_08',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sneha',
-      branch: 'Information Technology',
-      year: '3rd Year',
-      bio: 'Cybersecurity learner. Pentesting and Linux are life.',
-      connectionStatus: 'connected',
-      interests: ['Cybersecurity', 'Linux', 'Python']
-    }
-  ]);
-
-  const [globalMessages, setGlobalMessages] = useState([
-    {
-      id: 'msg_1',
-      senderId: 'std_002', 
-      text: 'Hey guys! Anyone up for the Hackathon registrations?',
-      timestamp: '9:30 PM'
-    },
-    {
-      id: 'msg_2',
-      senderId: 'std_003', 
-      text: 'Yes Rahul! I was looking for a teammate who knows React.',
-      timestamp: '9:32 PM'
-    },
-    {
-      id: 'msg_3',
-      senderId: 'std_005', 
-      text: 'College Server is down again. Is anyone else unable to open portals?',
-      timestamp: '9:45 PM'
-    }
-  ]);
-
-  const [societies, setSocieties] = useState([
-    { id: 'soc_coding', name: 'Coding Society', description: 'Algorithms, Hackathons, Open Source', membersCount: 142, joined: true },
-    { id: 'soc_robotics', name: 'Robotics Club', description: 'Arduino, Drone design, Hardware fabrication', membersCount: 88, joined: false },
-    { id: 'soc_cultural', name: 'Cultural Society', description: 'Music, Drama, Event organisation', membersCount: 110, joined: false }
-  ]);
-
-  const [societyAnnouncements, setSocietyAnnouncements] = useState([
-    { id: 'ann_1', societyId: 'soc_coding', title: 'Internal Hackathon Next Week', text: 'Registrations close this Sunday. Prizes up to ₹10K!', date: 'Today', isPinned: true },
-    { id: 'ann_2', societyId: 'soc_robotics', title: 'RoboWars Workshop', text: 'Learn to build line follower bots. Venue: Labs 3, Friday.', date: 'Yesterday' }
-  ]);
+  const [societyAnnouncements] = useState(INITIAL_ANNOUNCEMENTS);
 
   const [notifications, setNotifications] = useState([
     { id: 'notif_1', type: 'connection_request', message: 'Amit Patel sent you a connection request.', read: false, time: '2 mins ago' },
-    { id: 'notif_2', type: 'system', message: 'Welcome to CampusPulse! Complete your profile.', read: true, time: '1 hr ago' }
+    { id: 'notif_2', type: 'system', message: 'Welcome to CampusPulse! Complete your profile.', read: true, time: '1 hr ago' },
   ]);
 
-  const [privateMessages, setPrivateMessages] = useState([
-    { id: 'pm_1', conversationId: 'std_003', senderId: 'std_003', text: 'Hey, are you free for the project meeting?', timestamp: '10:00 AM' },
-    { id: 'pm_2', conversationId: 'std_003', senderId: 'std_001', text: 'Yes, around 2 PM works for me.', timestamp: '10:05 AM' }
-  ]);
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  const unreadPrivateCount = privateMessages.filter(
+    m => m.senderId !== currentUser?.id && !m.read
+  ).length;
 
   const handleLogin = (emailOrId, password, name = null) => {
-
-    if (emailOrId.trim()) {
-      const mockUser = {
-        id: 'std_001',
-        name: name || 'Chetan Sharma',
-        email: emailOrId.includes('@') ? emailOrId : 'chetan.sharma@college.edu',
-        collegeId: emailOrId.includes('@') ? 'COL2024001' : emailOrId.toUpperCase(),
-        anonUsername: 'SilentPioneer_42',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || 'Chetan'}`,
-        branch: 'Computer Science',
-        year: '3rd Year',
-        bio: 'Frontend designer and React developer. Building college ecosystem.',
-        isOnboarded: !name
-      };
-      setCurrentUser(mockUser);
-      return true;
+    if (!emailOrId.trim()) {
+      showToast('Please enter your email or college ID.', 'error');
+      return false;
     }
-    return false;
+    const mockUser = {
+      id: 'std_001',
+      name: name || 'Chetan Sharma',
+      email: emailOrId.includes('@') ? emailOrId : 'chetan.sharma@college.edu',
+      collegeId: emailOrId.includes('@') ? 'COL2024001' : emailOrId.toUpperCase(),
+      anonUsername: 'SilentPioneer_42',
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || 'Chetan'}`,
+      branch: 'Computer Science',
+      year: '3rd Year',
+      bio: 'Frontend designer and React developer. Building college ecosystem.',
+      isOnboarded: !name,
+      interests: ['React', 'UI/UX', 'Open Source'],
+    };
+    setCurrentUser(mockUser);
+    showToast(`Welcome back, ${mockUser.name}! 👋`, 'success');
+    return true;
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
     setActiveTab('chat');
+    showToast('Logged out successfully.', 'success');
   };
 
   const sendGlobalMessage = (text, attachment = null) => {
     if ((!text.trim() && !attachment) || !currentUser) return;
-
     const newMsg = {
       id: `msg_${Date.now()}`,
       senderId: currentUser.id,
       text: text.trim(),
-      attachment: attachment,
+      attachment,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      reactions: []
+      reactions: [],
     };
-
-    setGlobalMessages((prev) => [...prev, newMsg]);
+    setGlobalMessages(prev => [...prev, newMsg]);
   };
 
   const addReactionToMessage = (messageId, emoji) => {
-      setGlobalMessages(prev => prev.map(msg => {
-          if (msg.id === messageId) {
-              const existingReactions = msg.reactions || [];
-              return { ...msg, reactions: [...existingReactions, { emoji, userId: currentUser.id }] };
-          }
-          return msg;
-      }));
+    setGlobalMessages(prev =>
+      prev.map(msg => {
+        if (msg.id !== messageId) return msg;
+        const existing = msg.reactions || [];
+        const alreadyReacted = existing.find(r => r.emoji === emoji && r.userId === currentUser.id);
+        if (alreadyReacted) {
+          return { ...msg, reactions: existing.filter(r => !(r.emoji === emoji && r.userId === currentUser.id)) };
+        }
+        return { ...msg, reactions: [...existing, { emoji, userId: currentUser.id }] };
+      })
+    );
   };
 
   const sendConnectRequest = (id) => {
-    setStudents((prevStudents) =>
-      prevStudents.map((std) => {
-        if (std.id === id) {
-
-          if (std.connectionStatus === 'not_connected') {
-            return { ...std, connectionStatus: 'pending' };
-          }
-
-          if (std.connectionStatus === 'pending') {
-            return { ...std, connectionStatus: 'connected' };
-          }
-
-          return { ...std, connectionStatus: 'not_connected' };
+    setStudents(prev =>
+      prev.map(std => {
+        if (std.id !== id) return std;
+        if (std.connectionStatus === 'not_connected') {
+          showToast('Connection request sent!', 'success');
+          return { ...std, connectionStatus: 'pending' };
         }
-        return std;
+        if (std.connectionStatus === 'pending') {
+          showToast(`You are now connected with ${std.name}! 🎉`, 'success');
+          return { ...std, connectionStatus: 'connected' };
+        }
+        return { ...std, connectionStatus: 'not_connected' };
       })
     );
   };
 
   const toggleSocietyJoin = (id) => {
-    setSocieties((prev) =>
-      prev.map((soc) => (soc.id === id ? { ...soc, joined: !soc.joined } : soc))
+    setSocieties(prev =>
+      prev.map(soc => {
+        if (soc.id !== id) return soc;
+        const joined = !soc.joined;
+        showToast(joined ? `Joined ${soc.name}! 🎉` : `Left ${soc.name}.`, joined ? 'success' : 'info');
+        return { ...soc, joined };
+      })
     );
   };
 
   const updateProfile = (updatedProfile) => {
-    setCurrentUser((prev) => ({
-      ...prev,
-      ...updatedProfile
-    }));
+    setCurrentUser(prev => ({ ...prev, ...updatedProfile }));
+    showToast('Profile updated successfully!', 'success');
   };
 
   const completeOnboarding = (onboardingData) => {
-      setCurrentUser(prev => ({
-          ...prev,
-          ...onboardingData,
-          isOnboarded: true
-      }));
+    setCurrentUser(prev => ({ ...prev, ...onboardingData, isOnboarded: true }));
+    showToast('Welcome to CampusPulse! 🎉', 'success');
   };
 
   const markNotificationsAsRead = () => {
-      setNotifications(prev => prev.map(n => ({...n, read: true})));
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
   const sendPrivateMessage = (receiverId, text, attachment = null) => {
     if ((!text.trim() && !attachment) || !currentUser) return;
-
     const newMsg = {
       id: `pmsg_${Date.now()}`,
       senderId: currentUser.id,
-      conversationId: receiverId, 
+      conversationId: receiverId,
       text: text.trim(),
-      attachment: attachment,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      attachment,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      read: true,
     };
-
-    setPrivateMessages((prev) => [...prev, newMsg]);
+    setPrivateMessages(prev => [...prev, newMsg]);
   };
 
   return (
@@ -228,6 +325,9 @@ export function AppProvider({ children }) {
         societyAnnouncements,
         notifications,
         privateMessages,
+        unreadPrivateCount,
+        toast,
+        showToast,
         handleLogin,
         handleLogout,
         sendGlobalMessage,
@@ -237,7 +337,7 @@ export function AppProvider({ children }) {
         updateProfile,
         completeOnboarding,
         markNotificationsAsRead,
-        sendPrivateMessage
+        sendPrivateMessage,
       }}
     >
       {children}

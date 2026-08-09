@@ -1,9 +1,9 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Users, Building2, Tag } from 'lucide-react';
+import { Users, Building2, Tag, MessageSquare } from 'lucide-react';
 
 export default function ProfileView() {
-  const { currentUser, updateProfile, students, societies } = useContext(AppContext);
+  const { currentUser, updateProfile, students, societies, globalMessages } = useContext(AppContext);
 
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -60,6 +60,7 @@ export default function ProfileView() {
 
   const connectionsCount = students.filter(s => s.connectionStatus === 'connected').length;
   const societiesCount = societies.filter(s => s.joined).length;
+  const messagesCount = globalMessages.filter(m => m.senderId === currentUser.id).length;
 
   return (
     <div className="flex flex-col h-full bg-gray-950 md:pt-0 pt-[53px] overflow-y-auto pb-[60px] md:pb-0">
@@ -112,7 +113,7 @@ export default function ProfileView() {
         </div>
 
         {!editMode && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="rounded-2xl border border-white/10 bg-gray-900/60 p-4 flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
                         <Users className="w-5 h-5" />
@@ -129,6 +130,15 @@ export default function ProfileView() {
                     <div>
                         <p className="text-2xl font-bold text-white">{societiesCount}</p>
                         <p className="text-xs text-gray-500">Societies Joined</p>
+                    </div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-gray-900/60 p-4 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-400">
+                        <MessageSquare className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-white">{messagesCount}</p>
+                        <p className="text-xs text-gray-500">Messages Sent</p>
                     </div>
                 </div>
             </div>

@@ -47,7 +47,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ onLogout }) {
-  const { currentUser, activeTab, setActiveTab, notifications, markNotificationsAsRead } = useContext(AppContext);
+  const { currentUser, activeTab, setActiveTab, notifications, markNotificationsAsRead, unreadPrivateCount } = useContext(AppContext);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -97,8 +97,11 @@ export default function Sidebar({ onLogout }) {
                     : 'text-gray-500 hover:text-gray-300'
                   }`}
               >
-                <span className={`transition-transform duration-200 ${activeTab === item.id ? 'scale-110' : ''}`}>
-                    {item.icon}
+                <span className={`relative transition-transform duration-200 ${activeTab === item.id ? 'scale-110' : ''}`}>
+                  {item.icon}
+                  {item.id === 'messages' && unreadPrivateCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-gray-900 animate-pulse"></span>
+                  )}
                 </span>
                 <span className="text-[10px] font-medium">{item.label}</span>
               </button>
@@ -194,9 +197,14 @@ export default function Sidebar({ onLogout }) {
               </span>
               {item.label}
 
-              {activeTab === item.id && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-red-500"></span>
-              )}
+              <span className="ml-auto flex items-center gap-2">
+                {item.id === 'messages' && unreadPrivateCount > 0 && (
+                  <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">{unreadPrivateCount}</span>
+                )}
+                {activeTab === item.id && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                )}
+              </span>
             </button>
           ))}
         </nav>

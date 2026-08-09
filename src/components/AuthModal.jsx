@@ -4,7 +4,7 @@ import { X, Mail, Lock, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose }) {
 
-  const { handleLogin } = useContext(AppContext);
+  const { handleLogin, showToast } = useContext(AppContext);
 
   if (!isOpen) return null;
 
@@ -35,8 +35,8 @@ export default function AuthModal({ isOpen, onClose }) {
   const handleSendOtp = () => {
     if (!registerEmail) return;
     setIsOtpSent(true);
-    setOtpCountdown(30); 
-    alert(`OTP sent successfully to ${registerEmail}! (Use simulated OTP code: 123456)`);
+    setOtpCountdown(30);
+    showToast(`OTP sent to ${registerEmail}! Use code: 123456`, 'info');
   };
 
   const handleModeChange = (loginState) => {
@@ -48,22 +48,20 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-
     const success = handleLogin(loginEmail, loginPassword);
     if (success) {
-      onClose(); 
+      onClose();
     } else {
-      alert('Login failed. Please check your credentials.');
+      showToast('Login failed. Please check your credentials.', 'error');
     }
   };
 
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
     if (isOtpSent && otpCode !== '123456') {
-      alert("Invalid OTP! Please enter '123456' for verification.");
+      showToast("Invalid OTP! Please enter '123456' for demo.", 'error');
       return;
     }
-
     const success = handleLogin(registerEmail, registerPassword, registerName);
     if (success) {
       onClose();

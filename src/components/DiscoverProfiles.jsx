@@ -143,6 +143,10 @@ export default function DiscoverProfiles() {
                         }`}
                       />
 
+                      {isConnected && student.isOnline && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-gray-900"></span>
+                      )}
+
                       {!isConnected && (
                         <span className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-0.5 border border-gray-700">
                           <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
