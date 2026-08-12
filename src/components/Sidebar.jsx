@@ -61,31 +61,32 @@ export default function Sidebar({ onLogout }) {
 
   return (
     <>
-
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-gray-900 border-b border-white/10 w-full fixed top-0 left-0 z-50">
-        <span className="text-lg font-bold tracking-tight text-white">
-          Campus<span className="text-red-500">Pulse</span>
+      {/* Mobile Top Bar */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-zinc-200 w-full fixed top-0 left-0 z-50">
+        <span className="text-lg font-black tracking-tight text-zinc-950">
+          Campus<span className="text-emerald-600">Pulse</span>
         </span>
         <div className="flex items-center gap-4">
-            <button className="text-gray-400 hover:text-white transition-colors" onClick={() => setActiveTab('search')}>
+            <button className="text-zinc-500 hover:text-zinc-900 transition-colors" onClick={() => setActiveTab('search')}>
                 <Search className="w-5 h-5" />
             </button>
             <div className="relative">
-                <button className="text-gray-400 hover:text-white transition-colors" onClick={handleNotificationClick}>
+                <button className="text-zinc-500 hover:text-zinc-900 transition-colors" onClick={handleNotificationClick}>
                     <Bell className="w-5 h-5" />
                 </button>
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border border-gray-900"></span>
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse border border-white"></span>
                 )}
             </div>
 
-            <button className="text-gray-400 hover:text-white transition-colors" onClick={() => setActiveTab('settings')}>
+            <button className="text-zinc-500 hover:text-zinc-900 transition-colors" onClick={() => setActiveTab('settings')}>
                 <SettingsIcon className="w-5 h-5" />
             </button>
         </div>
       </div>
 
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-gray-900/95 backdrop-blur-lg z-50 border-t border-white/10 pb-safe">
+      {/* Mobile Bottom Nav */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-lg z-50 border-t border-zinc-200 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
           <nav className="flex items-center justify-around p-2">
             {NAV_ITEMS.map((item) => (
               <button
@@ -93,72 +94,75 @@ export default function Sidebar({ onLogout }) {
                 onClick={() => setActiveTab(item.id)}
                 className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 flex-1
                   ${activeTab === item.id
-                    ? 'text-red-400'
-                    : 'text-gray-500 hover:text-gray-300'
+                    ? 'text-emerald-600 bg-emerald-50'
+                    : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50'
                   }`}
               >
                 <span className={`relative transition-transform duration-200 ${activeTab === item.id ? 'scale-110' : ''}`}>
                   {item.icon}
                   {item.id === 'messages' && unreadPrivateCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-gray-900 animate-pulse"></span>
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full border border-white animate-pulse"></span>
                   )}
                 </span>
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
               </button>
             ))}
           </nav>
       </div>
 
+      {/* Mobile Notifications Dropdown */}
       {showNotifications && (
-          <div className="md:hidden fixed top-[53px] right-0 w-full sm:w-80 bg-gray-900 border-b sm:border border-white/10 shadow-2xl z-40 max-h-80 overflow-y-auto">
-              <div className="p-3 border-b border-white/5 font-semibold text-sm">Notifications</div>
+          <div className="md:hidden fixed top-[53px] right-0 w-full sm:w-80 bg-white border-b sm:border border-zinc-200 shadow-xl z-40 max-h-80 overflow-y-auto">
+              <div className="p-3 border-b border-zinc-100 font-bold text-sm text-zinc-950">Notifications</div>
               {notifications.length === 0 ? (
-                  <div className="p-4 text-xs text-gray-500 text-center">No notifications</div>
+                  <div className="p-4 text-xs text-zinc-500 text-center font-medium">No notifications</div>
               ) : (
                   notifications.map(n => (
-                      <div key={n.id} className="p-3 border-b border-white/5 last:border-0 flex flex-col gap-1 hover:bg-white/5">
-                          <span className="text-sm">{n.message}</span>
-                          <span className="text-[10px] text-gray-500">{n.time}</span>
+                      <div key={n.id} className="p-3 border-b border-zinc-100 last:border-0 flex flex-col gap-1 hover:bg-zinc-50">
+                          <span className="text-sm font-medium text-zinc-800">{n.message}</span>
+                          <span className="text-[10px] text-zinc-500 font-medium">{n.time}</span>
                       </div>
                   ))
               )}
           </div>
       )}
 
-      <aside className="hidden md:flex flex-col w-64 h-screen bg-gray-900/80 backdrop-blur-xl border-r border-white/10 flex-shrink-0 relative">
-
-        <div className="px-6 py-6 border-b border-white/10 flex items-center justify-between">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 h-screen bg-white border-r border-zinc-200 flex-shrink-0 relative shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30">
+        
+        <div className="px-6 py-6 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
           <div>
-              <h1 className="text-xl font-bold tracking-tight">
-                Campus<span className="text-red-500">Pulse</span>
+              <h1 className="text-xl font-black tracking-tight text-zinc-950">
+                Campus<span className="text-emerald-600">Pulse</span>
               </h1>
-              <p className="text-xs text-gray-500 mt-1">Your College Network</p>
+              <p className="text-[11px] text-zinc-500 mt-1 font-bold tracking-wider uppercase">Your College Network</p>
           </div>
           <div className="flex gap-3">
-              <button className="text-gray-400 hover:text-white transition-colors" onClick={() => setActiveTab('search')}>
+              <button className="text-zinc-400 hover:text-zinc-900 transition-colors bg-white p-1.5 rounded-lg border border-zinc-200 shadow-sm" onClick={() => setActiveTab('search')}>
                   <Search className="w-4 h-4" />
               </button>
               <div className="relative">
-                  <button className="text-gray-400 hover:text-white transition-colors" onClick={handleNotificationClick}>
+                  <button className="text-zinc-400 hover:text-zinc-900 transition-colors bg-white p-1.5 rounded-lg border border-zinc-200 shadow-sm" onClick={handleNotificationClick}>
                       <Bell className="w-4 h-4" />
                   </button>
                   {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse border-2 border-white"></span>
                   )}
               </div>
           </div>
         </div>
 
+        {/* Desktop Notifications Dropdown */}
         {showNotifications && (
-            <div className="absolute top-[80px] left-full ml-2 w-80 bg-gray-900 border border-white/10 rounded-xl shadow-2xl z-50 max-h-96 overflow-y-auto">
-                <div className="p-3 border-b border-white/5 font-semibold text-sm">Notifications</div>
+            <div className="absolute top-[80px] left-full ml-2 w-80 bg-white border border-zinc-200 rounded-2xl shadow-xl z-50 max-h-96 overflow-y-auto overflow-hidden">
+                <div className="p-4 border-b border-zinc-100 font-bold text-sm bg-zinc-50/50 text-zinc-950">Notifications</div>
                 {notifications.length === 0 ? (
-                    <div className="p-4 text-xs text-gray-500 text-center">No notifications</div>
+                    <div className="p-6 text-xs text-zinc-500 text-center font-medium">No notifications</div>
                 ) : (
                     notifications.map(n => (
-                        <div key={n.id} className="p-3 border-b border-white/5 last:border-0 flex flex-col gap-1 hover:bg-white/5 cursor-pointer">
-                            <span className="text-sm">{n.message}</span>
-                            <span className="text-[10px] text-gray-500">{n.time}</span>
+                        <div key={n.id} className="p-4 border-b border-zinc-100 last:border-0 flex flex-col gap-1 hover:bg-zinc-50 cursor-pointer transition-colors">
+                            <span className="text-sm font-medium text-zinc-800">{n.message}</span>
+                            <span className="text-[11px] text-zinc-400 font-semibold">{n.time}</span>
                         </div>
                     ))
                 )}
@@ -166,16 +170,16 @@ export default function Sidebar({ onLogout }) {
         )}
 
         {currentUser && (
-          <div className="px-4 py-4 border-b border-white/10">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+          <div className="px-4 py-4 border-b border-zinc-100">
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50 border border-zinc-100 hover:border-zinc-200 hover:bg-zinc-100/50 transition-colors cursor-pointer" onClick={() => setActiveTab('profile')}>
               <img
                 src={currentUser.avatar}
                 alt={currentUser.name}
-                className="w-10 h-10 rounded-full border-2 border-red-500/40"
+                className="w-10 h-10 rounded-full border-2 border-emerald-500/20 bg-white"
               />
               <div className="overflow-hidden">
-                <p className="text-sm font-semibold text-white truncate">{currentUser.name}</p>
-                <p className="text-xs text-gray-500 truncate">{currentUser.branch} · {currentUser.year}</p>
+                <p className="text-sm font-bold text-zinc-900 truncate">{currentUser.name}</p>
+                <p className="text-xs text-zinc-500 font-medium truncate">{currentUser.branch} · {currentUser.year}</p>
               </div>
             </div>
           </div>
@@ -186,10 +190,10 @@ export default function Sidebar({ onLogout }) {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full text-left group
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 w-full text-left group
                 ${activeTab === item.id
-                  ? 'bg-red-600/20 text-red-400 border border-red-500/30 shadow-lg shadow-red-500/5'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100'
+                  : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 border border-transparent'
                 }`}
             >
               <span className={`transition-transform duration-200 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-105'}`}>
@@ -199,23 +203,23 @@ export default function Sidebar({ onLogout }) {
 
               <span className="ml-auto flex items-center gap-2">
                 {item.id === 'messages' && unreadPrivateCount > 0 && (
-                  <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">{unreadPrivateCount}</span>
+                  <span className="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full shadow-sm">{unreadPrivateCount}</span>
                 )}
                 {activeTab === item.id && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                 )}
               </span>
             </button>
           ))}
         </nav>
 
-        <div className="px-3 py-4 border-t border-white/10 flex flex-col gap-1">
+        <div className="px-3 py-4 border-t border-zinc-100 flex flex-col gap-1 bg-zinc-50/50">
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full group
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 w-full group
                 ${activeTab === 'settings'
-                  ? 'bg-white/10 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-zinc-200 text-zinc-950'
+                  : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200/50'
                 }`}
           >
             <SettingsIcon className="w-5 h-5" />
@@ -223,7 +227,7 @@ export default function Sidebar({ onLogout }) {
           </button>
           <button
             onClick={onLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 w-full group"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-zinc-600 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200 w-full group"
           >
             <LogOut className="w-5 h-5" />
             Logout

@@ -30,7 +30,6 @@ export default function ProfileView() {
   };
 
   const handleCancel = () => {
-
     setFormData({
       name: currentUser.name,
       bio: currentUser.bio,
@@ -63,38 +62,38 @@ export default function ProfileView() {
   const messagesCount = globalMessages.filter(m => m.senderId === currentUser.id).length;
 
   return (
-    <div className="flex flex-col h-full bg-gray-950 md:pt-0 pt-[53px] overflow-y-auto pb-[60px] md:pb-0">
+    <div className="flex flex-col h-full bg-zinc-50 md:pt-0 pt-[53px] overflow-y-auto pb-[60px] md:pb-0">
 
-      <div className="px-6 py-4 border-b border-white/10 bg-gray-900/50 backdrop-blur-sm flex-shrink-0">
-        <h2 className="font-bold text-white text-lg">My Profile</h2>
-        <p className="text-xs text-gray-500 mt-0.5">Manage your identity on the college network</p>
+      <div className="px-6 py-5 border-b border-zinc-200 bg-white/80 backdrop-blur-md flex-shrink-0 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.02)] sticky top-0">
+        <h2 className="font-black text-zinc-950 text-2xl tracking-tight">My Profile</h2>
+        <p className="text-sm text-zinc-500 font-medium mt-1">Manage your identity on the college network</p>
       </div>
 
-      <div className="flex-1 p-6 max-w-2xl mx-auto w-full space-y-6">
+      <div className="flex-1 p-4 sm:p-6 max-w-4xl mx-auto w-full space-y-6">
 
-        <div className="rounded-2xl border border-white/10 bg-gray-900/60 backdrop-blur-sm p-6 flex flex-col sm:flex-row items-center gap-6">
+        {/* Profile Header Card */}
+        <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-sm">
 
           <div className="relative flex-shrink-0">
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              className="w-24 h-24 rounded-full border-4 border-red-500/40"
+              className="w-28 h-28 rounded-3xl border-4 border-white shadow-md bg-zinc-50"
             />
-
-            <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-green-400 border-2 border-gray-900"></span>
+            <span className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-emerald-500 border-4 border-white shadow-sm"></span>
           </div>
 
           <div className="flex-1 text-center sm:text-left">
-            <h3 className="text-xl font-bold text-white">{currentUser.name}</h3>
-            <p className="text-sm text-gray-400 mt-1">{currentUser.branch} · {currentUser.year}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{currentUser.email}</p>
+            <h3 className="text-2xl font-black text-zinc-950 tracking-tight">{currentUser.name}</h3>
+            <p className="text-[15px] font-bold text-zinc-500 mt-1">{currentUser.branch} · {currentUser.year}</p>
+            <p className="text-sm text-zinc-400 font-medium mt-0.5">{currentUser.email}</p>
 
-            <div className="flex items-center gap-2 mt-3 justify-center sm:justify-start">
-              <svg className="w-3.5 h-3.5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="flex items-center gap-2 mt-4 justify-center sm:justify-start bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 w-fit mx-auto sm:mx-0">
+              <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
               </svg>
-              <span className="text-xs text-orange-400">
-                Anonymous as: <strong>{currentUser.anonUsername}</strong>
+              <span className="text-xs text-amber-700 font-medium">
+                Anonymous as: <strong className="font-bold">{currentUser.anonUsername}</strong>
               </span>
             </div>
           </div>
@@ -102,7 +101,7 @@ export default function ProfileView() {
           {!editMode && (
             <button
               onClick={() => setEditMode(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600/80 hover:bg-red-500 text-white text-sm font-medium transition-all flex-shrink-0"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold transition-all flex-shrink-0 shadow-sm border border-zinc-200"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
@@ -112,41 +111,42 @@ export default function ProfileView() {
           )}
         </div>
 
+        {/* Stats Grid */}
         {!editMode && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="rounded-2xl border border-white/10 bg-gray-900/60 p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                        <Users className="w-5 h-5" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="rounded-3xl border border-zinc-200 bg-white p-5 flex items-center gap-4 shadow-sm">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-inner">
+                        <Users className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-white">{connectionsCount}</p>
-                        <p className="text-xs text-gray-500">Connections</p>
+                        <p className="text-2xl font-black text-zinc-950">{connectionsCount}</p>
+                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Connections</p>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-gray-900/60 p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-400">
-                        <Building2 className="w-5 h-5" />
+                <div className="rounded-3xl border border-zinc-200 bg-white p-5 flex items-center gap-4 shadow-sm">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-inner">
+                        <Building2 className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-white">{societiesCount}</p>
-                        <p className="text-xs text-gray-500">Societies Joined</p>
+                        <p className="text-2xl font-black text-zinc-950">{societiesCount}</p>
+                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Societies Joined</p>
                     </div>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-gray-900/60 p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-400">
-                        <MessageSquare className="w-5 h-5" />
+                <div className="rounded-3xl border border-zinc-200 bg-white p-5 flex items-center gap-4 shadow-sm">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-inner">
+                        <MessageSquare className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-white">{messagesCount}</p>
-                        <p className="text-xs text-gray-500">Messages Sent</p>
+                        <p className="text-2xl font-black text-zinc-950">{messagesCount}</p>
+                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Messages Sent</p>
                     </div>
                 </div>
             </div>
         )}
 
         {saveSuccess && (
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-900/30 border border-green-500/30 text-green-400 text-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-bold shadow-sm">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
             Profile updated successfully!
@@ -154,76 +154,76 @@ export default function ProfileView() {
         )}
 
         {editMode ? (
-          <div className="rounded-2xl border border-red-500/20 bg-gray-900/60 backdrop-blur-sm p-6 space-y-4 mb-8">
-            <h4 className="font-semibold text-white text-sm mb-2">Edit Your Information</h4>
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-6 shadow-sm mb-8">
+            <h4 className="font-black text-zinc-950 text-lg tracking-tight mb-2">Edit Your Information</h4>
 
             <div>
-              <label className="block text-xs text-gray-500 mb-1.5">Full Name</label>
+              <label className="block text-[13px] font-bold text-zinc-600 mb-2">Full Name</label>
               <input
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Your full name"
-                className="w-full bg-gray-800/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/30 transition-all"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-[15px] font-medium text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-inner"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 mb-1.5">Bio</label>
+              <label className="block text-[13px] font-bold text-zinc-600 mb-2">Bio</label>
               <textarea
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
                 rows={3}
                 placeholder="Tell your college about yourself..."
-                className="w-full bg-gray-800/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/30 transition-all resize-none"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-[15px] font-medium text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-inner resize-none"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs text-gray-500 mb-1.5">Branch / Department</label>
+                <label className="block text-[13px] font-bold text-zinc-600 mb-2">Branch / Department</label>
                 <input
                   name="branch"
                   value={formData.branch}
                   onChange={handleChange}
                   placeholder="e.g. Computer Science"
-                  className="w-full bg-gray-800/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/30 transition-all"
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-[15px] font-medium text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-inner"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1.5">Year</label>
+                <label className="block text-[13px] font-bold text-zinc-600 mb-2">Year</label>
                 <select
                   name="year"
                   value={formData.year}
                   onChange={handleChange}
-                  className="w-full bg-gray-800/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/30 transition-all"
+                  className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-3 text-[15px] font-medium text-zinc-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm cursor-pointer"
                 >
-                  <option value="1st Year" className="bg-gray-900">1st Year</option>
-                  <option value="2nd Year" className="bg-gray-900">2nd Year</option>
-                  <option value="3rd Year" className="bg-gray-900">3rd Year</option>
-                  <option value="4th Year" className="bg-gray-900">4th Year</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 mb-1.5">
+              <label className="block text-[13px] font-bold text-zinc-600 mb-2">
                 Anonymous Username{' '}
-                <span className="text-orange-400/70">(shown to non-connected users)</span>
+                <span className="text-amber-600/70">(shown to non-connected users)</span>
               </label>
               <input
                 name="anonUsername"
                 value={formData.anonUsername}
                 onChange={handleChange}
                 placeholder="e.g. SilentPioneer_42"
-                className="w-full bg-gray-800/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/30 transition-all"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-[15px] font-medium text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-inner"
               />
             </div>
 
             <div>
-                <label className="block text-xs text-gray-500 mb-1.5">Interests & Skills</label>
-                <div className="flex gap-2 mb-2">
+                <label className="block text-[13px] font-bold text-zinc-600 mb-2">Interests & Skills</label>
+                <div className="flex gap-2 mb-3">
                   <input
                     type="text"
                     value={currentInterest}
@@ -235,35 +235,35 @@ export default function ProfileView() {
                       }
                     }}
                     placeholder="Type an interest & press Enter..."
-                    className="flex-1 bg-gray-800/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/30 transition-all"
+                    className="flex-1 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-[15px] font-medium text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-inner"
                   />
                   <button 
                     onClick={addInterest}
-                    className="px-4 bg-gray-700 text-white rounded-xl text-sm font-medium hover:bg-gray-600 transition-colors"
+                    className="px-6 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-sm font-bold transition-colors shadow-sm"
                   >
                     Add
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {formData.interests.map(interest => (
-                    <span key={interest} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 text-red-400 text-xs border border-red-500/20">
+                    <span key={interest} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200 shadow-sm">
                       {interest}
-                      <button onClick={() => removeInterest(interest)} className="hover:text-white">&times;</button>
+                      <button onClick={() => removeInterest(interest)} className="hover:text-emerald-900 transition-colors">&times;</button>
                     </span>
                   ))}
                 </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-6">
               <button
                 onClick={handleSave}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-semibold transition-all"
+                className="flex-1 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[15px] font-bold transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
               >
                 Save Changes
               </button>
               <button
                 onClick={handleCancel}
-                className="flex-1 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-semibold border border-white/10 transition-all"
+                className="flex-1 py-3.5 rounded-full bg-white hover:bg-zinc-50 text-zinc-700 text-[15px] font-bold border-2 border-zinc-200 transition-all"
               >
                 Cancel
               </button>
@@ -271,23 +271,23 @@ export default function ProfileView() {
           </div>
         ) : (
 
-          <div className="rounded-2xl border border-white/10 bg-gray-900/60 backdrop-blur-sm p-6 space-y-6 mb-8">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-8 shadow-sm mb-8">
             <div>
-                <h4 className="font-semibold text-white text-sm mb-2">About Me</h4>
-                <p className="text-sm text-gray-400 leading-relaxed">
+                <h4 className="font-black text-zinc-950 text-lg tracking-tight mb-3">About Me</h4>
+                <p className="text-[15px] text-zinc-600 font-medium leading-relaxed">
                   {currentUser.bio || 'No bio added yet. Click "Edit Profile" to add one!'}
                 </p>
             </div>
 
             {currentUser.interests && currentUser.interests.length > 0 && (
                 <div>
-                    <h4 className="flex items-center gap-2 font-semibold text-white text-sm mb-3">
-                        <Tag className="w-4 h-4 text-red-500" />
+                    <h4 className="flex items-center gap-2 font-black text-zinc-950 text-lg tracking-tight mb-4">
+                        <Tag className="w-5 h-5 text-emerald-600" />
                         Interests & Skills
                     </h4>
                     <div className="flex flex-wrap gap-2">
                         {currentUser.interests.map(interest => (
-                            <span key={interest} className="px-3 py-1 rounded-full bg-gray-800 text-gray-300 text-xs border border-white/5">
+                            <span key={interest} className="px-4 py-1.5 rounded-full bg-zinc-100 text-zinc-700 text-xs font-bold border border-zinc-200 shadow-sm">
                                 {interest}
                             </span>
                         ))}
@@ -295,11 +295,11 @@ export default function ProfileView() {
                 </div>
             )}
 
-            <div className="pt-4 border-t border-white/8">
-              <p className="text-xs text-gray-600">
-                College ID: <span className="text-gray-400 font-mono">{currentUser.collegeId}</span>
+            <div className="pt-6 border-t border-zinc-100">
+              <p className="text-sm font-bold text-zinc-600">
+                College ID: <span className="text-zinc-900 font-mono bg-zinc-100 px-2 py-1 rounded-md">{currentUser.collegeId}</span>
               </p>
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs font-medium text-zinc-400 mt-2">
                 This is the ID provided by your college and cannot be changed here.
               </p>
             </div>

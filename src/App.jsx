@@ -20,13 +20,12 @@ function InnerApp() {
 
   if (!currentUser) {
     return (
-      <div className="relative min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,#030712_80%)] pointer-events-none z-[1]"></div>
+      <div className="relative min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans">
         <Navbar onLoginClick={() => setIsModalOpen(true)} />
         <HeroSection onStartClick={() => setIsModalOpen(true)} />
         <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         <Toast />
-        <footer className="w-full py-8 text-center text-xs text-gray-600 border-t border-white/5 relative z-10 bg-gray-950/20">
+        <footer className="w-full py-8 text-center text-xs text-zinc-500 border-t border-zinc-200 relative z-10 glassmorphism bg-white/50">
           <p>&copy; {new Date().getFullYear()} CampusPulse. Made with ❤️ for college students.</p>
         </footer>
       </div>
@@ -34,7 +33,7 @@ function InnerApp() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-950 text-gray-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-zinc-50 text-zinc-900 overflow-hidden font-sans">
       <Sidebar onLogout={handleLogout} />
       <OnboardingModal />
       <Toast />

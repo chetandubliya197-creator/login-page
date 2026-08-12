@@ -42,50 +42,50 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
   const hasResults = studentResults.length > 0 || societyResults.length > 0 || messageResults.length > 0;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4 bg-zinc-950/40 backdrop-blur-sm animate-fade-in">
       <div className="absolute inset-0" onClick={handleClose}></div>
 
-      <div className="relative w-full max-w-2xl bg-gray-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+      <div className="relative w-full max-w-2xl bg-white border border-zinc-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
 
-        <div className="flex items-center px-4 py-3 border-b border-white/10 bg-gray-900/50">
-          <Search className="w-5 h-5 text-gray-400 mr-3" />
+        <div className="flex items-center px-6 py-4 border-b border-zinc-200 bg-white">
+          <Search className="w-6 h-6 text-emerald-600 mr-4" />
           <input 
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search students, societies, or messages..."
-            className="flex-1 bg-transparent border-none text-white focus:outline-none focus:ring-0 text-lg placeholder-gray-500"
+            className="flex-1 bg-transparent border-none text-zinc-900 font-medium focus:outline-none focus:ring-0 text-lg placeholder-zinc-400"
           />
-          <button onClick={handleClose} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
-            <X className="w-5 h-5" />
+          <button onClick={handleClose} className="p-2 text-zinc-400 hover:text-zinc-700 rounded-full hover:bg-zinc-100 transition-colors">
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-2">
           {!query ? (
-            <div className="py-12 text-center text-gray-500 text-sm">
+            <div className="py-16 text-center text-zinc-400 text-[15px] font-medium">
               Type to start searching your college network...
             </div>
           ) : !hasResults ? (
-            <div className="py-12 text-center text-gray-500 text-sm">
-              No results found for "{query}"
+            <div className="py-16 text-center text-zinc-500 text-[15px] font-medium">
+              No results found for <span className="text-zinc-900 font-bold">"{query}"</span>
             </div>
           ) : (
-            <div className="space-y-4 p-2">
+            <div className="space-y-6 p-4">
 
               {studentResults.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Students</h3>
+                  <h3 className="text-xs font-black text-emerald-700 uppercase tracking-widest mb-3 px-3">Students</h3>
                   <div className="space-y-1">
                     {studentResults.map(s => (
-                      <div key={s.id} onClick={() => { setActiveTab('discover'); handleClose(); }} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
-                        <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
-                          <User className="w-4 h-4 text-gray-400" />
+                      <div key={s.id} onClick={() => { setActiveTab('discover'); handleClose(); }} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-zinc-50 cursor-pointer transition-colors border border-transparent hover:border-zinc-100">
+                        <div className="w-10 h-10 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center">
+                          <User className="w-5 h-5 text-zinc-500" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">{s.connectionStatus === 'connected' ? s.name : s.anonUsername}</p>
-                          <p className="text-[10px] text-gray-500">{s.branch}</p>
+                          <p className="text-[15px] font-bold text-zinc-900">{s.connectionStatus === 'connected' ? s.name : s.anonUsername}</p>
+                          <p className="text-[13px] font-medium text-zinc-500">{s.branch}</p>
                         </div>
                       </div>
                     ))}
@@ -95,16 +95,16 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
               {societyResults.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Societies</h3>
+                  <h3 className="text-xs font-black text-emerald-700 uppercase tracking-widest mb-3 px-3">Societies</h3>
                   <div className="space-y-1">
                     {societyResults.map(s => (
-                      <div key={s.id} onClick={() => { setActiveTab('societies'); handleClose(); }} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
-                        <div className="w-8 h-8 rounded-full bg-red-900/30 flex items-center justify-center text-red-500">
-                          <Building2 className="w-4 h-4" />
+                      <div key={s.id} onClick={() => { setActiveTab('societies'); handleClose(); }} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-zinc-50 cursor-pointer transition-colors border border-transparent hover:border-zinc-100">
+                        <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                          <Building2 className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">{s.name}</p>
-                          <p className="text-[10px] text-gray-500 truncate max-w-sm">{s.description}</p>
+                          <p className="text-[15px] font-bold text-zinc-900">{s.name}</p>
+                          <p className="text-[13px] font-medium text-zinc-500 truncate max-w-sm">{s.description}</p>
                         </div>
                       </div>
                     ))}
@@ -114,15 +114,15 @@ export default function GlobalSearchModal({ isOpen, onClose }) {
 
               {messageResults.length > 0 && (
                 <div>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">Messages</h3>
+                  <h3 className="text-xs font-black text-emerald-700 uppercase tracking-widest mb-3 px-3">Messages</h3>
                   <div className="space-y-1">
                     {messageResults.map(m => (
-                      <div key={m.id} onClick={() => { setActiveTab('chat'); handleClose(); }} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
-                        <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-500">
-                          <MessageSquareText className="w-4 h-4" />
+                      <div key={m.id} onClick={() => { setActiveTab('chat'); handleClose(); }} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-zinc-50 cursor-pointer transition-colors border border-transparent hover:border-zinc-100">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+                          <MessageSquareText className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-300 truncate">{m.text}</p>
+                          <p className="text-[15px] font-medium text-zinc-700 truncate">{m.text}</p>
                         </div>
                       </div>
                     ))}

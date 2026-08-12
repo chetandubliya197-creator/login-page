@@ -1,31 +1,39 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
+import { MoreVertical, Flag, Ban } from 'lucide-react';
 
 const STATUS_CONFIG = {
   not_connected: {
     label: 'Connect',
-    style: 'bg-red-600/80 hover:bg-red-500 text-white border-transparent',
+    style: 'bg-zinc-950 hover:bg-zinc-800 text-white shadow-sm hover:shadow-md border-transparent',
   },
   pending: {
     label: 'Pending…',
-    style: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400 cursor-default',
+    style: 'bg-amber-50 border-amber-200 text-amber-700 cursor-default shadow-sm font-bold',
   },
   connected: {
     label: 'Connected ✓',
-    style: 'bg-green-500/10 border-green-500/30 text-green-400',
+    style: 'bg-emerald-50 border-emerald-200 text-emerald-700 font-bold shadow-sm',
   },
 };
 
 export default function DiscoverProfiles() {
-  const { students, sendConnectRequest } = useContext(AppContext);
+  const { currentUser, students, sendConnectRequest, reportUser, blockUser } = useContext(AppContext);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBranch, setFilterBranch] = useState('All');
   const [activeInternalTab, setActiveInternalTab] = useState('discover'); 
+  const [activeMenu, setActiveMenu] = useState(null);
 
-  const branches = ['All', ...new Set(students.map((s) => s.branch))];
+  const visibleStudents = students.filter(s => 
+    !currentUser.blockedUsers?.includes(s.id) && 
+    !s.isSuspended &&
+    s.id !== currentUser.id // don't show self
+  );
 
-  const filteredStudents = students.filter((student) => {
+  const branches = ['All', ...new Set(visibleStudents.map((s) => s.branch))];
+
+  const filteredStudents = visibleStudents.filter((student) => {
     const query = searchQuery.toLowerCase();
     const isConnected = student.connectionStatus === 'connected';
 
@@ -43,34 +51,36 @@ export default function DiscoverProfiles() {
   });
 
   return (
-    <div className="flex flex-col h-full bg-gray-950 md:pt-0 pt-[53px] pb-[60px] md:pb-0">
+    <div className="flex flex-col h-full bg-zinc-50 md:pt-0 pt-[53px] pb-[60px] md:pb-0" onClick={() => setActiveMenu(null)}>
 
-      <div className="px-6 pt-4 pb-2 border-b border-white/10 bg-gray-900/50 backdrop-blur-sm flex-shrink-0">
-        <h2 className="font-bold text-white text-lg">Discover Students</h2>
-        <p className="text-xs text-gray-500 mt-0.5 mb-4">
+      {/* Header Area */}
+      <div className="px-6 pt-6 pb-0 border-b border-zinc-200 bg-white flex-shrink-0 z-10 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+        <h2 className="font-black text-zinc-950 text-2xl tracking-tight">Discover Students</h2>
+        <p className="text-sm text-zinc-500 font-medium mt-1 mb-6">
           Connect with batchmates · Real identity revealed only after connecting
         </p>
 
-        <div className="flex items-center gap-4 border-b border-white/5">
+        <div className="flex items-center gap-6 border-b border-zinc-100">
             <button 
                 onClick={() => setActiveInternalTab('discover')}
-                className={`pb-3 text-sm font-medium transition-colors border-b-2 ${activeInternalTab === 'discover' ? 'text-white border-red-500' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
+                className={`pb-3 text-sm font-bold transition-all border-b-2 ${activeInternalTab === 'discover' ? 'text-zinc-950 border-emerald-600' : 'text-zinc-500 border-transparent hover:text-zinc-800'}`}
             >
                 Discover Network
             </button>
             <button 
                 onClick={() => setActiveInternalTab('connections')}
-                className={`pb-3 text-sm font-medium transition-colors border-b-2 flex items-center gap-2 ${activeInternalTab === 'connections' ? 'text-white border-red-500' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
+                className={`pb-3 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeInternalTab === 'connections' ? 'text-zinc-950 border-emerald-600' : 'text-zinc-500 border-transparent hover:text-zinc-800'}`}
             >
                 My Connections
-                <span className="px-1.5 py-0.5 rounded-full bg-white/10 text-[10px]">{students.filter(s => s.connectionStatus === 'connected').length}</span>
+                <span className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 text-[10px] border border-zinc-200">
+                    {visibleStudents.filter(s => s.connectionStatus === 'connected').length}
+                </span>
             </button>
         </div>
 
-        <div className="flex gap-3 mt-4">
-
+        <div className="flex gap-3 py-4 bg-white">
           <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
             <input
@@ -78,17 +88,17 @@ export default function DiscoverProfiles() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by username or interest..."
-              className="w-full bg-gray-800/60 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/30 transition-all"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-full pl-10 pr-4 py-2.5 text-[15px] font-medium text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-inner"
             />
           </div>
 
           <select
             value={filterBranch}
             onChange={(e) => setFilterBranch(e.target.value)}
-            className="bg-gray-800/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-500/30 transition-all"
+            className="bg-white border border-zinc-200 rounded-full px-4 py-2.5 text-sm font-bold text-zinc-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm cursor-pointer"
           >
             {branches.map((b) => (
-              <option key={b} value={b} className="bg-gray-900">
+              <option key={b} value={b} className="bg-white text-zinc-900 font-medium">
                 {b}
               </option>
             ))}
@@ -96,40 +106,72 @@ export default function DiscoverProfiles() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         {filteredStudents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-600">
-            <svg className="w-12 h-12 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex flex-col items-center justify-center h-full text-zinc-400">
+            <svg className="w-12 h-12 mb-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            <p className="text-sm">No students match your filter.</p>
+            <p className="text-sm font-bold text-zinc-500">No students match your filter.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredStudents.map((student) => {
               const isConnected = student.connectionStatus === 'connected';
               const isPending = student.connectionStatus === 'pending';
               const statusCfg = STATUS_CONFIG[student.connectionStatus];
+              const isMenuOpen = activeMenu === student.id;
 
               return (
                 <div
                   key={student.id}
-                  className={`relative rounded-2xl border bg-gray-900/60 backdrop-blur-sm p-5 flex flex-col gap-3 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5
-                    ${isConnected ? 'border-green-500/20 hover:shadow-green-500/5' : 'border-white/8 hover:shadow-red-500/5'}`}
+                  className={`relative rounded-3xl border bg-white p-6 flex flex-col gap-4 transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-xl
+                    ${isConnected ? 'border-emerald-200' : 'border-zinc-200'}`}
                 >
 
-                  {isConnected && (
-                    <span className="absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-full bg-green-900/40 text-green-400 border border-green-700/30">
-                      Connected
-                    </span>
-                  )}
-                  {isPending && (
-                    <span className="absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-full bg-yellow-900/30 text-yellow-400 border border-yellow-700/30">
-                      Pending
-                    </span>
-                  )}
+                  <div className="absolute top-4 right-4 flex items-center gap-2">
+                    {isConnected && (
+                      <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold uppercase tracking-wider shadow-sm">
+                        Connected
+                      </span>
+                    )}
+                    {isPending && (
+                      <span className="text-[10px] px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-bold uppercase tracking-wider shadow-sm">
+                        Pending
+                      </span>
+                    )}
+                    
+                    <div className="relative">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setActiveMenu(isMenuOpen ? null : student.id); }}
+                        className="p-1 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors"
+                      >
+                        <MoreVertical className="w-5 h-5" />
+                      </button>
 
-                  <div className="flex items-center gap-3">
+                      {isMenuOpen && (
+                        <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-zinc-200 rounded-xl shadow-lg py-1 z-50 overflow-hidden">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); reportUser(student.id); setActiveMenu(null); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
+                          >
+                            <Flag className="w-3.5 h-3.5" />
+                            Report User
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); blockUser(student.id); setActiveMenu(null); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                          >
+                            <Ban className="w-3.5 h-3.5" />
+                            Block User
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mt-2">
                     <div className="relative">
                       <img
                         src={
@@ -138,18 +180,18 @@ export default function DiscoverProfiles() {
                             : `https://api.dicebear.com/7.x/bottts/svg?seed=${student.anonUsername}`
                         }
                         alt={isConnected ? student.name : student.anonUsername}
-                        className={`w-14 h-14 rounded-full border-2 ${
-                          isConnected ? 'border-green-500/40' : 'border-gray-600/40 opacity-80'
+                        className={`w-16 h-16 rounded-2xl border-2 shadow-sm ${
+                          isConnected ? 'border-emerald-200 bg-emerald-50' : 'border-zinc-200 bg-zinc-50'
                         }`}
                       />
 
                       {isConnected && student.isOnline && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-gray-900"></span>
+                        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
                       )}
 
                       {!isConnected && (
-                        <span className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-0.5 border border-gray-700">
-                          <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <span className="absolute -bottom-1.5 -right-1.5 bg-white rounded-full p-1 border border-zinc-200 shadow-sm">
+                          <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                           </svg>
                         </span>
@@ -157,26 +199,26 @@ export default function DiscoverProfiles() {
                     </div>
 
                     <div>
-                      <p className="font-semibold text-white text-sm">
+                      <p className="font-black text-zinc-950 text-lg tracking-tight pr-6">
                         {isConnected ? student.name : student.anonUsername}
                       </p>
-                      <p className="text-xs text-gray-500">{student.branch} · {student.year}</p>
+                      <p className="text-[13px] font-bold text-zinc-500 mt-0.5">{student.branch} · {student.year}</p>
                       {!isConnected && (
-                        <p className="text-[10px] text-gray-600 mt-0.5">Real name hidden</p>
+                        <p className="text-[10px] text-amber-600 font-bold mt-1 uppercase tracking-wider">Real name hidden</p>
                       )}
                     </div>
                   </div>
 
                   {isConnected && student.bio && (
-                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{student.bio}</p>
+                    <p className="text-sm text-zinc-600 font-medium leading-relaxed line-clamp-2 mt-1">{student.bio}</p>
                   )}
 
                   {isConnected && student.interests?.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 mt-1">
                       {student.interests.map((interest) => (
                         <span
                           key={interest}
-                          className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20"
+                          className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200"
                         >
                           {interest}
                         </span>
@@ -187,7 +229,7 @@ export default function DiscoverProfiles() {
                   <button
                     onClick={() => sendConnectRequest(student.id)}
                     disabled={isPending}
-                    className={`mt-auto w-full py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${statusCfg.style}`}
+                    className={`mt-auto w-full py-3 rounded-xl text-[13px] font-bold border transition-all duration-300 ${statusCfg.style}`}
                   >
                     {statusCfg.label}
                   </button>

@@ -45,22 +45,19 @@ export default function OnboardingModal() {
   if (currentUser?.isOnboarded) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-950/90 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg bg-gray-900 border border-white/10 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
-
-        <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-[80px] pointer-events-none"></div>
-
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-lg bg-white border border-zinc-200 rounded-3xl shadow-2xl p-8 sm:p-10 relative overflow-hidden">
         <div className="relative z-10">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-white mb-2">Welcome, {currentUser?.name?.split(' ')[0]}! 🎉</h2>
-            <p className="text-gray-400 text-sm">Let's set up your profile so you can connect with the right people on campus.</p>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-black text-zinc-950 mb-2 tracking-tight">Welcome, {currentUser?.name?.split(' ')[0]}! 🎉</h2>
+            <p className="text-zinc-500 text-sm font-medium">Let's set up your profile so you can connect with the right people on campus.</p>
           </div>
 
           {step === 1 ? (
             <div className="space-y-6 animate-slide-up">
               <div>
-                <label className="flex items-center gap-2 text-sm text-gray-300 font-medium mb-2">
-                  <BookOpen className="w-4 h-4 text-red-500" />
+                <label className="flex items-center gap-2 text-sm text-zinc-700 font-bold mb-2">
+                  <BookOpen className="w-4 h-4 text-emerald-600" />
                   What are you studying?
                 </label>
                 <input
@@ -68,14 +65,14 @@ export default function OnboardingModal() {
                   value={formData.branch}
                   onChange={(e) => setFormData(prev => ({...prev, branch: e.target.value}))}
                   placeholder="e.g. Computer Science, Mechanical..."
-                  className="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50"
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3.5 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="flex items-center gap-2 text-sm text-gray-300 font-medium mb-2">
-                  <GraduationCap className="w-4 h-4 text-red-500" />
+                <label className="flex items-center gap-2 text-sm text-zinc-700 font-bold mb-2">
+                  <GraduationCap className="w-4 h-4 text-emerald-600" />
                   Which year are you in?
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -83,10 +80,10 @@ export default function OnboardingModal() {
                     <button
                       key={year}
                       onClick={() => setFormData(prev => ({...prev, year}))}
-                      className={`py-3 rounded-xl text-sm font-medium transition-all ${
+                      className={`py-3 rounded-xl text-sm font-bold transition-all border ${
                         formData.year === year 
-                        ? 'bg-red-600/20 text-red-400 border border-red-500/50' 
-                        : 'bg-gray-800 text-gray-400 border border-transparent hover:bg-gray-700'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm' 
+                        : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
                       }`}
                     >
                       {year}
@@ -97,20 +94,20 @@ export default function OnboardingModal() {
 
               <button
                 onClick={handleNext}
-                className="w-full flex items-center justify-center gap-2 py-3.5 mt-8 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-red-900/20"
+                className="w-full flex items-center justify-center gap-2 py-4 mt-10 rounded-full bg-zinc-950 text-white font-bold text-base hover:-translate-y-0.5 transition-transform shadow-lg hover:shadow-xl"
               >
                 Next Step
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-5 h-5" />
               </button>
             </div>
           ) : (
             <div className="space-y-6 animate-slide-up">
               <div>
-                <label className="flex items-center gap-2 text-sm text-gray-300 font-medium mb-2">
-                  <Sparkles className="w-4 h-4 text-orange-500" />
+                <label className="flex items-center gap-2 text-sm text-zinc-700 font-bold mb-2">
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
                   What are your interests?
                 </label>
-                <p className="text-xs text-gray-500 mb-3">Add tags to help like-minded students find you.</p>
+                <p className="text-xs text-zinc-500 mb-3 font-medium">Add tags to help like-minded students find you.</p>
 
                 <div className="flex gap-2 mb-4">
                   <input
@@ -124,36 +121,36 @@ export default function OnboardingModal() {
                       }
                     }}
                     placeholder="Type an interest & press Enter..."
-                    className="flex-1 bg-gray-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50"
+                    className="flex-1 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                   />
                   <button 
                     onClick={() => addInterest(currentInterest)}
-                    className="px-4 bg-gray-700 text-white rounded-xl text-sm font-medium hover:bg-gray-600 transition-colors"
+                    className="px-5 bg-zinc-900 text-white rounded-xl text-sm font-bold hover:bg-zinc-800 transition-colors"
                   >
                     Add
                   </button>
                 </div>
 
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-6 min-h-[32px]">
                   {formData.interests.length === 0 && (
-                    <span className="text-xs text-gray-600 italic">No interests added yet.</span>
+                    <span className="text-xs text-zinc-400 italic font-medium py-1">No interests added yet.</span>
                   )}
                   {formData.interests.map(interest => (
-                    <span key={interest} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-xs border border-red-500/20">
+                    <span key={interest} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200 shadow-sm">
                       {interest}
-                      <button onClick={() => removeInterest(interest)} className="hover:text-white">&times;</button>
+                      <button onClick={() => removeInterest(interest)} className="hover:text-emerald-900 transition-colors">&times;</button>
                     </span>
                   ))}
                 </div>
 
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 font-semibold">Suggestions</p>
+                  <p className="text-[10px] uppercase tracking-wider text-zinc-400 mb-2 font-black">Suggestions</p>
                   <div className="flex flex-wrap gap-2">
                     {suggestedInterests.filter(i => !formData.interests.includes(i)).map(interest => (
                       <button
                         key={interest}
                         onClick={() => addInterest(interest)}
-                        className="px-3 py-1 rounded-full bg-gray-800 text-gray-400 text-xs hover:bg-gray-700 hover:text-white transition-colors"
+                        className="px-3 py-1.5 rounded-full bg-zinc-100 text-zinc-600 text-xs font-bold hover:bg-zinc-200 transition-colors border border-zinc-200"
                       >
                         + {interest}
                       </button>
@@ -163,16 +160,16 @@ export default function OnboardingModal() {
 
               </div>
 
-              <div className="flex gap-3 mt-8">
+              <div className="flex gap-3 mt-10">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex-1 py-3.5 rounded-xl bg-gray-800 text-gray-300 font-medium text-sm hover:bg-gray-700 transition-colors"
+                  className="flex-1 py-4 rounded-full bg-white border-2 border-zinc-200 text-zinc-700 font-bold text-sm hover:bg-zinc-50 transition-colors"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleFinish}
-                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold text-sm hover:scale-[1.02] transition-transform shadow-lg shadow-red-900/20"
+                  className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-zinc-950 text-white font-bold text-sm hover:-translate-y-0.5 transition-transform shadow-lg hover:shadow-xl"
                 >
                   Complete Setup
                 </button>

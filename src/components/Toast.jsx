@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { CheckCircle, XCircle, Info, X } from 'lucide-react';
+import { CheckCircle, XCircle, Info } from 'lucide-react';
 
 export default function Toast() {
   const { toast } = useContext(AppContext);
@@ -17,23 +17,23 @@ export default function Toast() {
   if (!toast) return null;
 
   const styles = {
-    success: 'bg-green-900/90 border-green-500/40 text-green-300',
-    error: 'bg-red-900/90 border-red-500/40 text-red-300',
-    info: 'bg-blue-900/90 border-blue-500/40 text-blue-300',
+    success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+    error: 'bg-rose-50 border-rose-200 text-rose-800',
+    info: 'bg-blue-50 border-blue-200 text-blue-800',
   };
 
   const icons = {
-    success: <CheckCircle className="w-4 h-4 flex-shrink-0" />,
-    error: <XCircle className="w-4 h-4 flex-shrink-0" />,
-    info: <Info className="w-4 h-4 flex-shrink-0" />,
+    success: <CheckCircle className="w-5 h-5 flex-shrink-0 text-emerald-600" />,
+    error: <XCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />,
+    info: <Info className="w-5 h-5 flex-shrink-0 text-blue-600" />,
   };
 
   return (
     <div
-      className={`fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-[999] flex items-center gap-2.5 px-4 py-3 rounded-xl border backdrop-blur-md shadow-2xl transition-all duration-300 ${styles[toast.type] || styles.info} ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className={`fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-[999] flex items-center gap-3 px-5 py-3.5 rounded-full border shadow-xl transition-all duration-300 ${styles[toast.type] || styles.info} ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}
     >
       {icons[toast.type] || icons.info}
-      <span className="text-sm font-medium whitespace-nowrap">{toast.message}</span>
+      <span className="text-sm font-bold tracking-wide whitespace-nowrap">{toast.message}</span>
     </div>
   );
 }

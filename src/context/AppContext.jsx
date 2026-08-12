@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useCallback } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export const AppContext = createContext();
@@ -17,6 +17,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'not_connected',
     interests: ['Coding', 'Gaming', 'Algorithms'],
     isOnline: true,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_003',
@@ -31,6 +33,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'connected',
     interests: ['Arduino', 'Robotics', 'WebDev'],
     isOnline: true,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_004',
@@ -45,6 +49,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'pending',
     interests: ['CAD', 'F1', 'Automobile'],
     isOnline: false,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_005',
@@ -59,6 +65,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'connected',
     interests: ['Cybersecurity', 'Linux', 'Python'],
     isOnline: true,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_006',
@@ -73,6 +81,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'not_connected',
     interests: ['AutoCAD', 'Architecture', 'Photography'],
     isOnline: false,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_007',
@@ -87,6 +97,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'not_connected',
     interests: ['Machine Learning', 'Python', 'Data Science'],
     isOnline: true,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_008',
@@ -101,6 +113,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'not_connected',
     interests: ['VLSI', 'Arduino', 'PCB Design'],
     isOnline: false,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_009',
@@ -115,6 +129,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'not_connected',
     interests: ['UI/UX', 'Figma', 'React'],
     isOnline: true,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_010',
@@ -129,6 +145,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'not_connected',
     interests: ['Open Source', 'C++', 'Competitive Programming'],
     isOnline: true,
+    reportCount: 0,
+    isSuspended: false,
   },
   {
     id: 'std_011',
@@ -143,6 +161,8 @@ const INITIAL_STUDENTS = [
     connectionStatus: 'not_connected',
     interests: ['Drones', 'Robotics', 'CAD'],
     isOnline: false,
+    reportCount: 0,
+    isSuspended: false,
   },
 ];
 
@@ -181,6 +201,10 @@ export function AppProvider({ children }) {
   const [societies, setSocieties] = useLocalStorage('cp_societies', INITIAL_SOCIETIES);
   const [globalMessages, setGlobalMessages] = useLocalStorage('cp_global_msgs', INITIAL_MESSAGES);
   const [privateMessages, setPrivateMessages] = useLocalStorage('cp_private_msgs', INITIAL_PRIVATE_MESSAGES);
+  
+  // Anti-Misuse State (Rate Limiting)
+  const [globalMessageHistory, setGlobalMessageHistory] = useLocalStorage('cp_global_msg_hist', []);
+  const [connectionHistory, setConnectionHistory] = useLocalStorage('cp_conn_hist', []);
 
   const [activeTab, setActiveTab] = useState('chat');
   const [toast, setToast] = useState(null);
@@ -206,11 +230,19 @@ export function AppProvider({ children }) {
       showToast('Please enter your email or college ID.', 'error');
       return false;
     }
+    
+    // Strict Guideline: Email must be a college email.
+    const isEmail = emailOrId.includes('@');
+    if (isEmail && !emailOrId.endsWith('@college.edu')) {
+      showToast('Registration/Login restricted to official @college.edu emails only.', 'error');
+      return false;
+    }
+
     const mockUser = {
       id: 'std_001',
       name: name || 'Chetan Sharma',
-      email: emailOrId.includes('@') ? emailOrId : 'chetan.sharma@college.edu',
-      collegeId: emailOrId.includes('@') ? 'COL2024001' : emailOrId.toUpperCase(),
+      email: isEmail ? emailOrId : 'chetan.sharma@college.edu',
+      collegeId: isEmail ? 'COL2024001' : emailOrId.toUpperCase(),
       anonUsername: 'SilentPioneer_42',
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || 'Chetan'}`,
       branch: 'Computer Science',
@@ -218,6 +250,7 @@ export function AppProvider({ children }) {
       bio: 'Frontend designer and React developer. Building college ecosystem.',
       isOnboarded: !name,
       interests: ['React', 'UI/UX', 'Open Source'],
+      blockedUsers: [],
     };
     setCurrentUser(mockUser);
     showToast(`Welcome back, ${mockUser.name}! 👋`, 'success');
@@ -232,6 +265,16 @@ export function AppProvider({ children }) {
 
   const sendGlobalMessage = (text, attachment = null) => {
     if ((!text.trim() && !attachment) || !currentUser) return;
+
+    // Strict Guideline: Rate Limiting for Global Messages (Max 5 per minute)
+    const now = Date.now();
+    const recentMessages = globalMessageHistory.filter(time => now - time < 60000); // 1 minute window
+    if (recentMessages.length >= 5) {
+      showToast("Rate limit exceeded. You can only send 5 messages per minute to prevent spam.", "error");
+      return;
+    }
+    setGlobalMessageHistory([...recentMessages, now]);
+
     const newMsg = {
       id: `msg_${Date.now()}`,
       senderId: currentUser.id,
@@ -258,6 +301,20 @@ export function AppProvider({ children }) {
   };
 
   const sendConnectRequest = (id) => {
+    // Strict Guideline: Rate Limiting for Connections (Max 10 per day)
+    const now = Date.now();
+    const recentConnections = connectionHistory.filter(time => now - time < 86400000); // 24 hours window
+    
+    // We check connection limits if the user is currently 'not_connected' and trying to connect.
+    const targetStudent = students.find(s => s.id === id);
+    if (targetStudent && targetStudent.connectionStatus === 'not_connected') {
+      if (recentConnections.length >= 10) {
+        showToast("Daily limit reached. You can only send 10 connection requests per 24 hours.", "error");
+        return;
+      }
+      setConnectionHistory([...recentConnections, now]);
+    }
+
     setStudents(prev =>
       prev.map(std => {
         if (std.id !== id) return std;
@@ -301,6 +358,13 @@ export function AppProvider({ children }) {
 
   const sendPrivateMessage = (receiverId, text, attachment = null) => {
     if ((!text.trim() && !attachment) || !currentUser) return;
+
+    // Check if blocked
+    if (currentUser.blockedUsers?.includes(receiverId)) {
+        showToast("You cannot send messages to a blocked user.", "error");
+        return;
+    }
+
     const newMsg = {
       id: `pmsg_${Date.now()}`,
       senderId: currentUser.id,
@@ -311,6 +375,30 @@ export function AppProvider({ children }) {
       read: true,
     };
     setPrivateMessages(prev => [...prev, newMsg]);
+  };
+
+  const reportUser = (userId) => {
+    setStudents(prev => prev.map(std => {
+      if (std.id !== userId) return std;
+      const newReportCount = (std.reportCount || 0) + 1;
+      const isSuspended = newReportCount >= 5;
+      
+      if (isSuspended) {
+        showToast(`User has been automatically suspended due to multiple reports.`, "info");
+      } else {
+        showToast("User reported successfully. Thank you for keeping the campus safe.", "success");
+      }
+      return { ...std, reportCount: newReportCount, isSuspended };
+    }));
+  };
+
+  const blockUser = (userId) => {
+    setCurrentUser(prev => {
+      const blocked = prev.blockedUsers || [];
+      if (blocked.includes(userId)) return prev;
+      showToast("User blocked. You will no longer see their messages or profile.", "success");
+      return { ...prev, blockedUsers: [...blocked, userId] };
+    });
   };
 
   return (
@@ -338,6 +426,8 @@ export function AppProvider({ children }) {
         completeOnboarding,
         markNotificationsAsRead,
         sendPrivateMessage,
+        reportUser,
+        blockUser,
       }}
     >
       {children}

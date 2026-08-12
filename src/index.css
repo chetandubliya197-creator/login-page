@@ -3,76 +3,44 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-dark: #151515;
-  --color-brand-accent: #e32636;
-  
+  --color-brand-primary: #10b981; /* Emerald 500 */
   --font-sans: 'Outfit', 'Inter', sans-serif;
 }
 
 @layer base {
   body {
     font-family: var(--font-sans);
-    @apply bg-gray-950 text-gray-100 antialiased overflow-x-hidden;
+    @apply bg-zinc-50 text-zinc-900 antialiased overflow-x-hidden;
   }
 }
 
-/* Custom Grid Background Overlay */
+/* Custom Grid Background Overlay (Lighter for clean theme) */
 .bg-grid-pattern {
   background-size: 40px 40px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
 }
 
-/* Glassmorphism utility */
+/* Glassmorphism utility for light theme */
 .glassmorphism {
-  background: rgba(15, 15, 15, 0.6);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* Sliding background shape for Desktop & Mobile */
-.clip-shape-login {
-  clip-path: polygon(0 8%, 100% 24%, 100% 100%, 0 100%);
-}
-
-.clip-shape-register {
-  clip-path: polygon(0 0, 100% 0, 100% 92%, 0 76%);
-}
-
-@media (min-width: 768px) {
-  .clip-shape-login {
-    clip-path: polygon(6% 0, 100% 0, 100% 100%, 26% 100%);
-  }
-  .clip-shape-register {
-    clip-path: polygon(0 0, 94% 0, 74% 100%, 0 100%);
-  }
-}
-
-/* Custom glow effect */
-.glow-red {
-  box-shadow: 0 0 40px -5px rgba(227, 38, 54, 0.3);
-}
-
-.glow-btn {
-  box-shadow: 0 4px 20px -2px rgba(227, 38, 54, 0.4);
-}
-.glow-btn:hover {
-  box-shadow: 0 4px 30px 2px rgba(227, 38, 54, 0.6);
-}
-
-/* Custom scrollbars */
+/* Custom scrollbars - Light */
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: #f4f4f5; /* zinc-100 */
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #d4d4d8; /* zinc-300 */
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #a1a1aa; /* zinc-400 */
 }

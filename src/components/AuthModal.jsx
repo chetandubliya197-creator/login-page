@@ -6,8 +6,6 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const { handleLogin, showToast } = useContext(AppContext);
 
-  if (!isOpen) return null;
-
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -32,8 +30,14 @@ export default function AuthModal({ isOpen, onClose }) {
     return () => clearInterval(timer);
   }, [otpCountdown]);
 
+  if (!isOpen) return null;
+
   const handleSendOtp = () => {
     if (!registerEmail) return;
+    if (!registerEmail.endsWith('@college.edu')) {
+      showToast("Only official @college.edu emails are allowed.", 'error');
+      return;
+    }
     setIsOtpSent(true);
     setOtpCountdown(30);
     showToast(`OTP sent to ${registerEmail}! Use code: 123456`, 'info');
@@ -69,74 +73,75 @@ export default function AuthModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in transition-opacity duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm animate-fade-in transition-opacity duration-300">
 
       <div className="absolute inset-0" onClick={onClose}></div>
 
-      <div className="relative w-full max-w-[850px] min-h-[680px] md:min-h-[580px] bg-[#121212] rounded-3xl border border-white/5 shadow-2xl overflow-hidden flex flex-col md:flex-row z-10 transition-transform duration-300 scale-100">
+      <div className="relative w-full max-w-[850px] min-h-[680px] md:min-h-[580px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row z-10 transition-transform duration-300 scale-100">
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-40 p-2.5 rounded-full bg-black/40 md:bg-white/5 hover:bg-red-600/20 hover:text-red-500 border border-white/5 hover:border-red-500/30 text-gray-400 transition-all duration-300"
+          className="absolute top-4 right-4 z-40 p-2.5 rounded-full bg-zinc-100 md:bg-white/50 hover:bg-zinc-200 text-zinc-500 transition-all duration-300 border border-zinc-200 shadow-sm"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div 
-          className={`absolute z-20 bg-gradient-to-br from-[#a61515] to-[#e32636] transition-all duration-700 ease-in-out ${
+          className={`absolute z-20 bg-emerald-600 transition-all duration-700 ease-in-out shadow-xl ${
             isLogin 
-              ? 'left-0 md:left-1/2 top-1/2 md:top-0 h-1/2 md:h-full w-full md:w-1/2 clip-shape-login' 
-              : 'left-0 top-0 h-1/2 md:h-full w-full md:w-1/2 clip-shape-register'
+              ? 'left-0 md:left-1/2 top-1/2 md:top-0 h-1/2 md:h-full w-full md:w-1/2' 
+              : 'left-0 top-0 h-1/2 md:h-full w-full md:w-1/2'
           }`}
         >
 
           <div 
-            className={`absolute inset-0 w-full h-full flex flex-col justify-center items-center pl-16 pr-4 sm:pl-24 sm:pr-8 text-center text-white transition-all duration-700 ease-in-out ${
+            className={`absolute inset-0 w-full h-full flex flex-col justify-center items-center p-8 text-center text-white transition-all duration-700 ease-in-out ${
               isLogin 
                 ? 'opacity-100 scale-100 blur-0 translate-y-0 md:translate-x-0' 
                 : 'opacity-0 scale-90 blur-md translate-y-12 md:translate-y-0 md:translate-x-12 pointer-events-none'
             }`}
           >
-            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/15 mb-6 backdrop-blur-sm animate-bounce" style={{ animationDuration: '3s' }}>
-              <ShieldCheck className="w-6 h-6 text-white" />
+            <div className="w-16 h-16 rounded-3xl bg-white/20 flex items-center justify-center border border-white/30 mb-6 backdrop-blur-md shadow-inner">
+              <ShieldCheck className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-3xl font-extrabold mb-4 tracking-tight">WELCOME!</h3>
-            <p className="text-white/80 font-light text-sm sm:text-base max-w-[280px] mb-8 leading-relaxed">
-              Don't have an account yet? Create one now and start securing your workspace.
+            <h3 className="text-4xl font-black mb-4 tracking-tight">Welcome!</h3>
+            <p className="text-emerald-50 font-medium text-base max-w-[280px] mb-8 leading-relaxed">
+              New to CampusPulse? Create an account to join your exclusive college network.
             </p>
             <button
               onClick={() => handleModeChange(false)}
-              className="px-8 py-3 rounded-xl border border-white/30 bg-white/10 hover:bg-white/20 transition-all duration-300 font-semibold text-sm tracking-wide backdrop-blur-sm active:scale-95 cursor-pointer"
+              className="px-8 py-3.5 rounded-full border-2 border-white bg-transparent hover:bg-white hover:text-emerald-700 transition-all duration-300 font-bold text-sm tracking-wide shadow-lg cursor-pointer"
             >
               Create Account
             </button>
           </div>
 
           <div 
-            className={`absolute inset-0 w-full h-full flex flex-col justify-center items-center pr-16 pl-4 sm:pr-24 sm:pl-8 text-center text-white transition-all duration-700 ease-in-out ${
+            className={`absolute inset-0 w-full h-full flex flex-col justify-center items-center p-8 text-center text-white transition-all duration-700 ease-in-out ${
               !isLogin 
                 ? 'opacity-100 scale-100 blur-0 translate-y-0 md:translate-x-0' 
                 : 'opacity-0 scale-90 blur-md -translate-y-12 md:translate-y-0 md:-translate-x-12 pointer-events-none'
             }`}
           >
-            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/15 mb-6 backdrop-blur-sm animate-bounce" style={{ animationDuration: '3s' }}>
-              <ShieldCheck className="w-6 h-6 text-white" />
+            <div className="w-16 h-16 rounded-3xl bg-white/20 flex items-center justify-center border border-white/30 mb-6 backdrop-blur-md shadow-inner">
+              <ShieldCheck className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-3xl font-extrabold mb-4 tracking-tight">WELCOME BACK!</h3>
-            <p className="text-white/80 font-light text-sm sm:text-base max-w-[280px] mb-8 leading-relaxed">
-              Already have an account? Sign in to resume monitoring your secure assets.
+            <h3 className="text-4xl font-black mb-4 tracking-tight">Welcome Back!</h3>
+            <p className="text-emerald-50 font-medium text-base max-w-[280px] mb-8 leading-relaxed">
+              Already connected? Sign in to see what's happening on campus right now.
             </p>
             <button
               onClick={() => handleModeChange(true)}
-              className="px-8 py-3 rounded-xl border border-white/30 bg-white/10 hover:bg-white/20 transition-all duration-300 font-semibold text-sm tracking-wide backdrop-blur-sm active:scale-95 cursor-pointer"
+              className="px-8 py-3.5 rounded-full border-2 border-white bg-transparent hover:bg-white hover:text-emerald-700 transition-all duration-300 font-bold text-sm tracking-wide shadow-lg cursor-pointer"
             >
               Sign In
             </button>
           </div>
         </div>
 
-        <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center px-8 sm:px-12 pt-32 pb-3 md:pt-32 md:pb-2 z-10">
+        {/* Login Form */}
+        <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center px-8 sm:px-14 pt-32 pb-3 md:pt-32 md:pb-2 z-10 bg-white">
           <form onSubmit={handleLoginSubmit} className="space-y-6">
 
             <div 
@@ -145,8 +150,8 @@ export default function AuthModal({ isOpen, onClose }) {
               }`}
               style={{ transitionDelay: isLogin ? '100ms' : '0ms' }}
             >
-              <h2 className="text-3xl font-extrabold text-white tracking-tight mb-1">Sign In</h2>
-              <p className="text-gray-400 text-xs font-light">Access your secure identity vault</p>
+              <h2 className="text-3xl font-black text-zinc-950 tracking-tight mb-2">Sign In</h2>
+              <p className="text-zinc-500 text-sm font-medium">Access your campus network</p>
             </div>
 
             <div 
@@ -159,7 +164,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 type="email"
                 name="email"
                 id="login_email"
-                className="block py-3 px-0 w-full text-sm text-white bg-transparent border-0 border-b border-gray-700 appearance-none focus:outline-none focus:ring-0 focus:border-red-500 peer placeholder-transparent"
+                className="block py-3 px-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
                 placeholder=" "
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
@@ -167,11 +172,11 @@ export default function AuthModal({ isOpen, onClose }) {
               />
               <label
                 htmlFor="login_email"
-                className="absolute left-0 top-3 text-gray-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-red-500"
+                className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
-                Email Address
+                College Email (@college.edu)
               </label>
-              <Mail className="absolute right-0 top-3 w-5 h-5 text-gray-600 peer-focus:text-red-500 transition-colors" />
+              <Mail className="absolute right-0 top-3 w-5 h-5 text-zinc-400 peer-focus:text-emerald-600 transition-colors" />
             </div>
 
             <div 
@@ -184,7 +189,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 id="login_password"
-                className="block py-3 px-0 w-full text-sm text-white bg-transparent border-0 border-b border-gray-700 appearance-none focus:outline-none focus:ring-0 focus:border-red-500 peer placeholder-transparent"
+                className="block py-3 px-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
                 placeholder=" "
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
@@ -192,14 +197,14 @@ export default function AuthModal({ isOpen, onClose }) {
               />
               <label
                 htmlFor="login_password"
-                className="absolute left-0 top-3 text-gray-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-red-500"
+                className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
                 Password
               </label>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-3 text-gray-600 hover:text-gray-400 focus:outline-none"
+                className="absolute right-0 top-3 text-zinc-400 hover:text-zinc-600 focus:outline-none"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -214,16 +219,16 @@ export default function AuthModal({ isOpen, onClose }) {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input 
                   type="checkbox" 
-                  className="rounded bg-gray-900 border-gray-700 text-red-600 focus:ring-red-500/20 focus:ring-offset-gray-950 w-4 h-4 cursor-pointer" 
+                  className="rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer" 
                 />
-                <span className="text-xs text-gray-400 font-light hover:text-gray-300 transition-colors">Remember me</span>
+                <span className="text-sm text-zinc-500 font-medium hover:text-zinc-700 transition-colors">Remember me</span>
               </label>
-              <a href="#" className="text-xs text-red-500 hover:text-red-400 transition-colors font-medium">Forgot Password?</a>
+              <a href="#" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors font-bold">Forgot Password?</a>
             </div>
 
             <button
               type="submit"
-              className={`w-full py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-600 text-white font-bold text-sm tracking-wide transition-all duration-700 ease-out active:scale-95 glow-btn ${
+              className={`w-full py-4 rounded-full bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-base tracking-wide transition-all duration-700 ease-out shadow-lg hover:-translate-y-0.5 ${
                 isLogin ? 'translate-x-0 opacity-100 blur-0' : '-translate-x-[120%] opacity-0 blur-md pointer-events-none'
               }`}
               style={{ transitionDelay: isLogin ? '500ms' : '0ms' }}
@@ -233,8 +238,9 @@ export default function AuthModal({ isOpen, onClose }) {
           </form>
         </div>
 
-        <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center px-8 sm:px-12 pt-32 pb-3 md:pt-32 md:pb-2 z-10 md:ml-auto">
-          <form onSubmit={handleRegisterSubmit} className="space-y-5">
+        {/* Register Form */}
+        <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center px-8 sm:px-14 pt-32 pb-3 md:pt-32 md:pb-2 z-10 md:ml-auto bg-white">
+          <form onSubmit={handleRegisterSubmit} className="space-y-6">
 
             <div 
               className={`transition-all duration-700 ease-out ${
@@ -242,8 +248,8 @@ export default function AuthModal({ isOpen, onClose }) {
               }`}
               style={{ transitionDelay: !isLogin ? '100ms' : '0ms' }}
             >
-              <h2 className="text-3xl font-extrabold text-white tracking-tight mb-1">Create Account</h2>
-              <p className="text-gray-400 text-xs font-light">Join the secure network</p>
+              <h2 className="text-3xl font-black text-zinc-950 tracking-tight mb-2">Sign Up</h2>
+              <p className="text-zinc-500 text-sm font-medium">Join the secure college network</p>
             </div>
 
             <div 
@@ -256,7 +262,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 type="text"
                 name="name"
                 id="register_name"
-                className="block py-3 px-0 w-full text-sm text-white bg-transparent border-0 border-b border-gray-700 appearance-none focus:outline-none focus:ring-0 focus:border-red-500 peer placeholder-transparent"
+                className="block py-3 px-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
                 placeholder=" "
                 value={registerName}
                 onChange={(e) => setRegisterName(e.target.value)}
@@ -264,11 +270,11 @@ export default function AuthModal({ isOpen, onClose }) {
               />
               <label
                 htmlFor="register_name"
-                className="absolute left-0 top-3 text-gray-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-red-500"
+                className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
                 Full Name
               </label>
-              <User className="absolute right-0 top-3 w-5 h-5 text-gray-600 peer-focus:text-red-500 transition-colors" />
+              <User className="absolute right-0 top-3 w-5 h-5 text-zinc-400 peer-focus:text-emerald-600 transition-colors" />
             </div>
 
             <div 
@@ -281,7 +287,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 type="email"
                 name="email"
                 id="register_email"
-                className="block py-3 pr-24 pl-0 w-full text-sm text-white bg-transparent border-0 border-b border-gray-700 appearance-none focus:outline-none focus:ring-0 focus:border-red-500 peer placeholder-transparent"
+                className="block py-3 pr-24 pl-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
                 placeholder=" "
                 value={registerEmail}
                 onChange={(e) => setRegisterEmail(e.target.value)}
@@ -289,16 +295,16 @@ export default function AuthModal({ isOpen, onClose }) {
               />
               <label
                 htmlFor="register_email"
-                className="absolute left-0 top-3 text-gray-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-red-500"
+                className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
-                Email Address
+                College Email (@college.edu)
               </label>
 
               <button
                 type="button"
                 onClick={handleSendOtp}
                 disabled={!registerEmail || otpCountdown > 0}
-                className="absolute right-0 top-2 px-2.5 py-1 rounded bg-red-600/10 text-red-500 hover:bg-red-600/20 text-xs font-semibold tracking-wider transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer border border-red-500/20"
+                className="absolute right-0 top-2 px-3 py-1.5 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 text-xs font-bold tracking-wider transition-colors disabled:opacity-50 border border-zinc-200 shadow-sm"
               >
                 {otpCountdown > 0 ? `${otpCountdown}s` : isOtpSent ? "Resend" : "Send OTP"}
               </button>
@@ -315,7 +321,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 type="text"
                 name="otp"
                 id="register_otp"
-                className="block py-3 px-0 w-full text-sm text-white bg-transparent border-0 border-b border-gray-700 appearance-none focus:outline-none focus:ring-0 focus:border-red-500 peer placeholder-transparent"
+                className="block py-3 px-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
                 placeholder=" "
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value)}
@@ -323,11 +329,11 @@ export default function AuthModal({ isOpen, onClose }) {
               />
               <label
                 htmlFor="register_otp"
-                className="absolute left-0 top-3 text-gray-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-red-500"
+                className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
                 Enter OTP
               </label>
-              <ShieldCheck className="absolute right-0 top-3 w-5 h-5 text-gray-600 peer-focus:text-red-500 transition-colors" />
+              <ShieldCheck className="absolute right-0 top-3 w-5 h-5 text-zinc-400 peer-focus:text-emerald-600 transition-colors" />
             </div>
 
             <div 
@@ -340,7 +346,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 id="register_password"
-                className="block py-3 px-0 w-full text-sm text-white bg-transparent border-0 border-b border-gray-700 appearance-none focus:outline-none focus:ring-0 focus:border-red-500 peer placeholder-transparent"
+                className="block py-3 px-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
                 placeholder=" "
                 value={registerPassword}
                 onChange={(e) => setRegisterPassword(e.target.value)}
@@ -348,14 +354,14 @@ export default function AuthModal({ isOpen, onClose }) {
               />
               <label
                 htmlFor="register_password"
-                className="absolute left-0 top-3 text-gray-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-red-500"
+                className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
                 Password
               </label>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-3 text-gray-600 hover:text-gray-400 focus:outline-none"
+                className="absolute right-0 top-3 text-zinc-400 hover:text-zinc-600 focus:outline-none"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -363,7 +369,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
             <button
               type="submit"
-              className={`w-full py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-600 text-white font-bold text-sm tracking-wide transition-all duration-700 ease-out active:scale-95 glow-btn ${
+              className={`w-full py-4 rounded-full bg-zinc-950 hover:bg-zinc-800 text-white font-bold text-base tracking-wide transition-all duration-700 ease-out shadow-lg hover:-translate-y-0.5 ${
                 !isLogin ? 'translate-x-0 opacity-100 blur-0' : 'translate-x-[120%] opacity-0 blur-md pointer-events-none'
               }`}
               style={{ transitionDelay: !isLogin ? '500ms' : '0ms' }}
