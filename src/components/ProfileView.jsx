@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Users, Building2, Tag, MessageSquare } from 'lucide-react';
+import { Users, Building2, Tag, MessageSquare, Camera } from 'lucide-react';
 
 export default function ProfileView() {
   const { currentUser, updateProfile, students, societies, globalMessages } = useContext(AppContext);
@@ -13,12 +13,29 @@ export default function ProfileView() {
     year: currentUser.year || '',
     anonUsername: currentUser.anonUsername || '',
     interests: currentUser.interests || [],
+    avatar: currentUser.avatar || '',
   });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [currentInterest, setCurrentInterest] = useState('');
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Basic check for file size (e.g. max 2MB) so localStorage doesn't crash
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image is too large. Please select an image under 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, avatar: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSave = () => {
@@ -37,6 +54,7 @@ export default function ProfileView() {
       year: currentUser.year,
       anonUsername: currentUser.anonUsername,
       interests: currentUser.interests || [],
+      avatar: currentUser.avatar,
     });
     setEditMode(false);
     setCurrentInterest('');
@@ -74,13 +92,27 @@ export default function ProfileView() {
         {/* Profile Header Card */}
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-sm">
 
-          <div className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0 group">
             <img
-              src={currentUser.avatar}
+              src={editMode ? formData.avatar : currentUser.avatar}
               alt={currentUser.name}
-              className="w-28 h-28 rounded-3xl border-4 border-white shadow-md bg-zinc-50"
+              className="w-28 h-28 rounded-3xl border-4 border-white shadow-md bg-zinc-50 object-cover"
             />
-            <span className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-emerald-500 border-4 border-white shadow-sm"></span>
+            {editMode ? (
+                <>
+                  <label className="absolute inset-0 bg-black/40 rounded-3xl flex flex-col items-center justify-center cursor-pointer md:opacity-0 group-hover:opacity-100 transition-opacity z-10 backdrop-blur-sm">
+                      <Camera className="w-8 h-8 text-white mb-1" />
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Change</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                  </label>
+                  <label className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-emerald-500 border-4 border-white shadow-sm flex items-center justify-center cursor-pointer hover:bg-emerald-600 transition-colors z-20">
+                      <Camera className="w-4 h-4 text-white" />
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                  </label>
+                </>
+            ) : (
+                <span className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-emerald-500 border-4 border-white shadow-sm"></span>
+            )}
           </div>
 
           <div className="flex-1 text-center sm:text-left">
