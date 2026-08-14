@@ -231,17 +231,18 @@ export function AppProvider({ children }) {
       return false;
     }
     
-    // Strict Guideline: Email must be a college email.
+    // Strict Guideline: Email must match the indoreinstitute format.
     const isEmail = emailOrId.includes('@');
-    if (isEmail && !emailOrId.endsWith('@college.edu')) {
-      showToast('Registration/Login restricted to official @college.edu emails only.', 'error');
+    const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
+    if (isEmail && !emailRegex.test(emailOrId)) {
+      showToast('Registration/Login restricted to name.surnamebranchyear@indoreinstitute.com format.', 'error');
       return false;
     }
 
     const mockUser = {
       id: 'std_001',
       name: name || 'Chetan Sharma',
-      email: isEmail ? emailOrId : 'chetan.sharma@college.edu',
+      email: isEmail ? emailOrId : 'chetan.sharmacs2024@indoreinstitute.com',
       collegeId: isEmail ? 'COL2024001' : emailOrId.toUpperCase(),
       anonUsername: 'SilentPioneer_42',
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || 'Chetan'}`,

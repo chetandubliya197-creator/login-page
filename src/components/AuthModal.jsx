@@ -34,8 +34,9 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const handleSendOtp = () => {
     if (!registerEmail) return;
-    if (!registerEmail.endsWith('@college.edu')) {
-      showToast("Only official @college.edu emails are allowed.", 'error');
+    const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
+    if (!emailRegex.test(registerEmail)) {
+      showToast("Format must be: name.surnamebranchyear@indoreinstitute.com", 'error');
       return;
     }
     setIsOtpSent(true);
@@ -52,6 +53,11 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
+    const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
+    if (!emailRegex.test(loginEmail)) {
+      showToast("Format must be: name.surnamebranchyear@indoreinstitute.com", 'error');
+      return;
+    }
     const success = handleLogin(loginEmail, loginPassword);
     if (success) {
       onClose();
@@ -174,7 +180,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 htmlFor="login_email"
                 className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
-                College Email (@college.edu)
+                Email (e.g. rahul.vermacs2024@indoreinstitute.com)
               </label>
               <Mail className="absolute right-0 top-3 w-5 h-5 text-zinc-400 peer-focus:text-emerald-600 transition-colors" />
             </div>
@@ -297,7 +303,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 htmlFor="register_email"
                 className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
-                College Email (@college.edu)
+                Email (e.g. rahul.vermacs2024@indoreinstitute.com)
               </label>
 
               <button
