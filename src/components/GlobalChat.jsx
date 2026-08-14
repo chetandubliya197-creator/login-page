@@ -177,7 +177,8 @@ export default function GlobalChat() {
           return (
             <div
               key={msg.id}
-              className={`flex items-end gap-3 group ${isMe ? 'flex-row-reverse' : 'flex-row'}`}
+              onClick={() => setActiveMenu(isMenuOpen ? null : msg.id)}
+              className={`flex items-end gap-3 group ${isMe ? 'flex-row-reverse' : 'flex-row'} cursor-pointer md:cursor-default`}
             >
               <img
                 src={sender.avatar}
@@ -210,8 +211,8 @@ export default function GlobalChat() {
 
                   <div className="relative">
                     <button 
-                      onClick={() => setActiveMenu(isMenuOpen ? null : msg.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-zinc-100 text-zinc-400 transition-all"
+                      onClick={(e) => { e.stopPropagation(); setActiveMenu(isMenuOpen ? null : msg.id); }}
+                      className={`p-1 rounded hover:bg-zinc-100 text-zinc-400 transition-all ${isMenuOpen ? 'opacity-100' : 'opacity-100 lg:opacity-0 lg:group-hover:opacity-100'}`}
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
@@ -221,14 +222,14 @@ export default function GlobalChat() {
                         {isMe ? (
                           <>
                             <button 
-                              onClick={() => { startEdit(msg); setActiveMenu(null); }}
+                              onClick={(e) => { e.stopPropagation(); startEdit(msg); setActiveMenu(null); }}
                               className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                               Edit
                             </button>
                             <button 
-                              onClick={() => { deleteGlobalMessage(msg.id); setActiveMenu(null); }}
+                              onClick={(e) => { e.stopPropagation(); deleteGlobalMessage(msg.id); setActiveMenu(null); }}
                               className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -238,14 +239,14 @@ export default function GlobalChat() {
                         ) : (
                           <>
                             <button 
-                              onClick={() => { reportUser(msg.senderId); setActiveMenu(null); }}
+                              onClick={(e) => { e.stopPropagation(); reportUser(msg.senderId); setActiveMenu(null); }}
                               className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
                             >
                               <Flag className="w-3.5 h-3.5" />
                               Report User
                             </button>
                             <button 
-                              onClick={() => { blockUser(msg.senderId); setActiveMenu(null); }}
+                              onClick={(e) => { e.stopPropagation(); blockUser(msg.senderId); setActiveMenu(null); }}
                               className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
                             >
                               <Ban className="w-3.5 h-3.5" />
@@ -294,11 +295,11 @@ export default function GlobalChat() {
                       {msg.isEdited && <span className={`text-[10px] ml-2 font-medium ${isMe ? 'text-emerald-200' : 'text-zinc-400'}`}>(edited)</span>}
                     </div>
 
-                    <div className={`absolute -top-5 ${isMe ? '-left-14' : '-right-24'} hidden group-hover/bubble:flex items-center gap-1 bg-white border border-zinc-200 rounded-full px-2 py-1 shadow-lg z-10 transition-all`}>
+                    <div className={`absolute -top-11 md:-top-5 ${isMe ? 'right-0 md:right-auto md:-left-14' : 'left-0 md:left-auto md:-right-24'} ${isMenuOpen ? 'flex' : 'hidden md:group-hover/bubble:flex'} items-center gap-1 bg-white border border-zinc-200 rounded-full px-2 py-1 shadow-lg z-30 transition-all scale-[0.85] md:scale-100 origin-bottom`}>
                         {['👍', '❤️', '😂'].map(emoji => (
                             <button 
                                 key={emoji} 
-                                onClick={() => addReactionToMessage(msg.id, emoji)}
+                                onClick={(e) => { e.stopPropagation(); addReactionToMessage(msg.id, emoji); setActiveMenu(null); }}
                                 className="hover:scale-125 transition-transform text-lg"
                             >
                                 {emoji}
@@ -306,7 +307,7 @@ export default function GlobalChat() {
                         ))}
                         <div className="w-[1px] h-4 bg-zinc-200 mx-1"></div>
                         <button 
-                            onClick={() => { setReplyingTo(msg); setEditingMsg(null); textareaRef.current?.focus(); }}
+                            onClick={(e) => { e.stopPropagation(); setReplyingTo(msg); setEditingMsg(null); setActiveMenu(null); textareaRef.current?.focus(); }}
                             className="p-1 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-emerald-600 transition-colors"
                         >
                             <Reply className="w-3.5 h-3.5" />

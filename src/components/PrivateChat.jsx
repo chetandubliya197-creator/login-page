@@ -280,7 +280,8 @@ export default function PrivateChat() {
                                 return (
                                     <div
                                         key={msg.id}
-                                        className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                                        onClick={() => setActiveMenu(activeMenu === msg.id ? null : msg.id)}
+                                        className={`flex ${isMe ? 'justify-end' : 'justify-start'} cursor-pointer md:cursor-default`}
                                     >
                                         {!isMe && (
                                             <img src={activeChat.avatar} className="w-8 h-8 rounded-full border border-zinc-200 mr-2 self-end mb-1" alt="" />
@@ -322,9 +323,9 @@ export default function PrivateChat() {
                                                     </p>
                                                 </div>
 
-                                                <div className={`absolute top-1/2 -translate-y-1/2 ${isMe ? '-left-20' : '-right-20'} hidden group-hover/bubble:flex items-center gap-1 bg-white border border-zinc-200 rounded-full px-1 py-1 shadow-lg z-10 transition-all`}>
+                                                <div className={`absolute -top-11 md:top-1/2 md:-translate-y-1/2 ${isMe ? 'right-0 md:right-auto md:-left-20' : 'left-0 md:left-auto md:-right-20'} ${activeMenu === msg.id ? 'flex' : 'hidden md:group-hover/bubble:flex'} items-center gap-1 bg-white border border-zinc-200 rounded-full px-1 py-1 shadow-lg z-20 transition-all scale-[0.85] md:scale-100 origin-bottom`}>
                                                     <button 
-                                                        onClick={() => { setReplyingTo(msg); setEditingMsg(null); textareaRef.current?.focus(); }}
+                                                        onClick={(e) => { e.stopPropagation(); setReplyingTo(msg); setEditingMsg(null); setActiveMenu(null); textareaRef.current?.focus(); }}
                                                         className="p-1.5 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-emerald-600 transition-colors"
                                                         title="Reply"
                                                     >
@@ -333,14 +334,14 @@ export default function PrivateChat() {
                                                     {isMe && (
                                                         <>
                                                             <button 
-                                                                onClick={() => startEdit(msg)}
+                                                                onClick={(e) => { e.stopPropagation(); startEdit(msg); setActiveMenu(null); }}
                                                                 className="p-1.5 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-blue-600 transition-colors"
                                                                 title="Edit"
                                                             >
                                                                 <Edit2 className="w-3.5 h-3.5" />
                                                             </button>
                                                             <button 
-                                                                onClick={() => deletePrivateMessage(msg.id)}
+                                                                onClick={(e) => { e.stopPropagation(); deletePrivateMessage(msg.id); setActiveMenu(null); }}
                                                                 className="p-1.5 hover:bg-rose-50 rounded-full text-zinc-400 hover:text-rose-600 transition-colors"
                                                                 title="Delete"
                                                             >
