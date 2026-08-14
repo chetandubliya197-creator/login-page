@@ -3,7 +3,7 @@ import { AppContext } from '../context/AppContext';
 import { Send, User, Paperclip, X, FileText, ArrowLeft, MoreVertical, Flag, Ban, Search, Phone, Video, Smile, MessageSquareText, Reply, Edit2, Trash2, ChevronDown, Check } from 'lucide-react';
 
 export default function PrivateChat() {
-  const { currentUser, students, privateMessages, sendPrivateMessage, editPrivateMessage, deletePrivateMessage, reportUser, blockUser } = useContext(AppContext);
+  const { currentUser, students, privateMessages, sendPrivateMessage, editPrivateMessage, deletePrivateMessage, reportUser, blockUser, markPrivateConversationAsRead } = useContext(AppContext);
   const [activeChat, setActiveChat] = useState(null); 
   const [inputText, setInputText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,6 +26,14 @@ export default function PrivateChat() {
     !s.isSuspended &&
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const getLatestMessage = (studentId) => {
+    const conversation = privateMessages.filter(m => 
+        (m.senderId === currentUser.id && m.conversationId === studentId) ||
+        (m.senderId === studentId && m.conversationId === currentUser.id)
+    );
+    return conversation.length > 0 ? conversation[conversation.length - 1] : null;
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,6 +66,13 @@ export default function PrivateChat() {
         }
     }
   }, [currentUser.blockedUsers, students, activeChat]);
+
+  // Mark messages as read when a chat is open
+  useEffect(() => {
+    if (activeChat) {
+      markPrivateConversationAsRead(activeChat.id);
+    }
+  }, [activeChat, privateMessages.length]);
 
   const handleFileSelect = (e) => {
       const file = e.target.files[0];
@@ -155,7 +170,11 @@ export default function PrivateChat() {
                 </div>
             ) : (
                 <div className="flex flex-col">
-                    {connectedStudents.map(student => (
+                    {connectedStudents.map(student => {
+                        const latestMsg = getLatestMessage(student.id);
+                        const isUnread = latestMsg && latestMsg.senderId === student.id && !latestMsg.read;
+
+                        return (
                         <button
                             key={student.id}
                             onClick={() => { setActiveChat(student); setIsMenuOpen(false); }}
@@ -173,16 +192,19 @@ export default function PrivateChat() {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-baseline mb-0.5">
-                                    <h3 className="text-[14px] font-bold text-[#0f172a] truncate">{student.name}</h3>
-                                    <span className="text-[10px] font-medium text-emerald-600">10:42 AM</span>
+                                    <h3 className={`text-[14px] truncate ${isUnread ? 'font-black text-[#0f172a]' : 'font-bold text-[#0f172a]'}`}>{student.name}</h3>
+                                    {latestMsg && <span className={`text-[10px] font-medium ${isUnread ? 'text-emerald-600 font-bold' : 'text-zinc-400'}`}>{latestMsg.timestamp}</span>}
                                 </div>
-                                <p className="text-[13px] text-zinc-500 font-medium truncate flex items-center gap-2">
-                                    Are we still meeting at the libr...
-                                    {activeChat?.id !== student.id && <span className="w-2 h-2 bg-emerald-500 rounded-full ml-auto shrink-0"></span>}
+                                <p className={`text-[13px] truncate flex items-center gap-2 ${isUnread ? 'text-emerald-700 font-bold' : 'text-zinc-500 font-medium'}`}>
+                                    {latestMsg 
+                                        ? (latestMsg.attachment ? (latestMsg.attachment.type === 'image' ? '📸 Image' : '📎 Attachment') : latestMsg.text)
+                                        : 'Say hi!'
+                                    }
+                                    {isUnread && <span className="w-2 h-2 bg-emerald-500 rounded-full ml-auto shrink-0"></span>}
                                 </p>
                             </div>
                         </button>
-                    ))}
+                    )})}
                 </div>
             )}
         </div>

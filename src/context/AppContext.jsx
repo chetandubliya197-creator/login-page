@@ -191,8 +191,8 @@ const INITIAL_MESSAGES = [
 ];
 
 const INITIAL_PRIVATE_MESSAGES = [
-  { id: 'pm_1', conversationId: 'std_003', senderId: 'std_003', text: 'Hey, are you free for the project meeting?', timestamp: '10:00 AM' },
-  { id: 'pm_2', conversationId: 'std_003', senderId: 'std_001', text: 'Yes, around 2 PM works for me.', timestamp: '10:05 AM' },
+  { id: 'pm_1', conversationId: 'std_001', senderId: 'std_003', text: 'Hey, are you free for the project meeting?', timestamp: '10:00 AM', read: true },
+  { id: 'pm_2', conversationId: 'std_003', senderId: 'std_001', text: 'Yes, around 2 PM works for me.', timestamp: '10:05 AM', read: true },
 ];
 
 export function AppProvider({ children }) {
@@ -410,6 +410,15 @@ export function AppProvider({ children }) {
     showToast('Message deleted', 'success');
   };
 
+  const markPrivateConversationAsRead = (conversationUserId) => {
+    setPrivateMessages(prev => prev.map(msg => {
+      if (msg.senderId === conversationUserId && !msg.read) {
+        return { ...msg, read: true };
+      }
+      return msg;
+    }));
+  };
+
   const reportUser = (userId) => {
     setStudents(prev => prev.map(std => {
       if (std.id !== userId) return std;
@@ -463,6 +472,7 @@ export function AppProvider({ children }) {
         sendPrivateMessage,
         editPrivateMessage,
         deletePrivateMessage,
+        markPrivateConversationAsRead,
         reportUser,
         blockUser,
       }}
