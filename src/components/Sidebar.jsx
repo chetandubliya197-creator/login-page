@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import { 
   MessageSquareText, 
@@ -12,7 +12,9 @@ import {
   User,
   HelpCircle,
   LogOut,
-  Plus
+  Plus,
+  Menu as MenuIcon,
+  X
 } from 'lucide-react';
 import { Activity, GraduationCap } from 'lucide-react'; // For the logo
 
@@ -29,6 +31,12 @@ const NAV_ITEMS = [
 export default function Sidebar({ onLogout, onNewPost }) {
   const { currentUser, activeTab, setActiveTab, notifications, markNotificationsAsRead, unreadPrivateCount } = useContext(AppContext);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [activeTab]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -44,15 +52,23 @@ export default function Sidebar({ onLogout, onNewPost }) {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-zinc-200 w-full fixed top-0 left-0 z-50">
-        <div className="flex items-center gap-2">
-            <div className="relative flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-[#0f172a]" />
-                <Activity className="w-8 h-8 text-[#0f172a] absolute -bottom-2 -right-2" strokeWidth={3} />
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-zinc-200 w-full fixed top-0 left-0 z-40">
+        <div className="flex items-center gap-3">
+            <button 
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="p-1 -ml-1 text-zinc-500 hover:text-zinc-900 transition-colors"
+            >
+                <MenuIcon className="w-6 h-6" />
+            </button>
+            <div className="flex items-center gap-1.5">
+                <div className="relative flex items-center justify-center scale-90">
+                    <GraduationCap className="w-6 h-6 text-[#0f172a]" />
+                    <Activity className="w-8 h-8 text-[#0f172a] absolute -bottom-2 -right-2" strokeWidth={3} />
+                </div>
+                <span className="text-lg font-black tracking-tight text-[#0f172a] ml-1">
+                    CampusPulse
+                </span>
             </div>
-            <span className="text-lg font-black tracking-tight text-[#0f172a] ml-2">
-                CampusPulse
-            </span>
         </div>
         <div className="flex items-center gap-4">
             <button className="text-zinc-500 hover:text-zinc-900 transition-colors" onClick={() => setActiveTab('search')}>
@@ -111,21 +127,39 @@ export default function Sidebar({ onLogout, onNewPost }) {
           </div>
       )}
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 h-screen bg-white border-r border-zinc-200 flex-shrink-0 relative shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30">
+      {/* Mobile Menu Backdrop */}
+      {isMobileMenuOpen && (
+          <div 
+              className="md:hidden fixed inset-0 bg-zinc-950/40 backdrop-blur-sm z-40 transition-opacity"
+              onClick={() => setIsMobileMenuOpen(false)}
+          />
+      )}
+
+      {/* Sidebar (Desktop + Mobile Slide-over) */}
+      <aside className={`fixed md:relative top-0 left-0 h-screen bg-white border-r border-zinc-200 flex-shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-50 flex flex-col w-[280px] md:w-64 transition-transform duration-300 ease-in-out ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
         
         {/* Logo Section */}
-        <div className="px-6 py-6 border-b border-zinc-100 flex flex-col gap-1 bg-white">
-          <div className="flex items-center gap-2">
-              <div className="relative flex items-center justify-center">
-                  <GraduationCap className="w-7 h-7 text-[#0f172a]" />
-                  <Activity className="w-8 h-8 text-[#0f172a] absolute -bottom-2 -right-3" strokeWidth={3} />
+        <div className="px-6 py-6 border-b border-zinc-100 flex items-center justify-between bg-white">
+          <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                  <div className="relative flex items-center justify-center">
+                      <GraduationCap className="w-7 h-7 text-[#0f172a]" />
+                      <Activity className="w-8 h-8 text-[#0f172a] absolute -bottom-2 -right-3" strokeWidth={3} />
+                  </div>
+                  <h1 className="text-[22px] font-black tracking-tight text-[#0f172a] ml-3">
+                    CampusPulse
+                  </h1>
               </div>
-              <h1 className="text-[22px] font-black tracking-tight text-[#0f172a] ml-3">
-                CampusPulse
-              </h1>
+              <p className="text-[10px] text-zinc-400 font-semibold tracking-wide ml-[42px]">DIGITAL COMMONS</p>
           </div>
-          <p className="text-[10px] text-zinc-400 font-semibold tracking-wide ml-[42px]">DIGITAL COMMONS</p>
+          <button 
+              className="md:hidden p-2 -mr-2 text-zinc-400 hover:text-zinc-900 bg-zinc-50 rounded-full"
+              onClick={() => setIsMobileMenuOpen(false)}
+          >
+              <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Desktop Notifications Dropdown */}
@@ -149,7 +183,7 @@ export default function Sidebar({ onLogout, onNewPost }) {
         <div className="flex-1 overflow-y-auto py-4 px-4 flex flex-col gap-2">
             
             {/* New Post Button */}
-            <button onClick={onNewPost} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-sm shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 mb-4">
+            <button onClick={() => { onNewPost(); setIsMobileMenuOpen(false); }} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-sm shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 mb-4">
                 <Plus className="w-5 h-5" />
                 New Post
             </button>
@@ -208,7 +242,7 @@ export default function Sidebar({ onLogout, onNewPost }) {
                             <p className="text-[11px] text-zinc-500 font-medium truncate">@{currentUser.anonUsername.toLowerCase()}</p>
                         </div>
                     </div>
-                    <button onClick={onLogout} className="text-zinc-400 hover:text-rose-500 p-2 rounded-full hover:bg-rose-50 transition-colors">
+                    <button onClick={() => { onLogout(); setIsMobileMenuOpen(false); }} className="text-zinc-400 hover:text-rose-500 p-2 rounded-full hover:bg-rose-50 transition-colors">
                         <LogOut className="w-4 h-4" />
                     </button>
                 </div>
