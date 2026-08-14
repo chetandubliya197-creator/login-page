@@ -1,18 +1,43 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Paperclip, X, Image as ImageIcon, FileText, Send, Smile, MoreVertical, Flag, Ban } from 'lucide-react';
+import { Paperclip, X, Image as ImageIcon, FileText, Send, Smile, MoreVertical, Flag, Ban, Reply, Edit2, Trash2, ChevronDown, Check } from 'lucide-react';
 
 export default function GlobalChat() {
-  const { currentUser, students, globalMessages, sendGlobalMessage, addReactionToMessage, reportUser, blockUser } = useContext(AppContext);
+  const { currentUser, students, globalMessages, sendGlobalMessage, editGlobalMessage, deleteGlobalMessage, addReactionToMessage, reportUser, blockUser } = useContext(AppContext);
   const [inputText, setInputText] = useState('');
   const [attachment, setAttachment] = useState(null); 
   const [activeMenu, setActiveMenu] = useState(null);
+  
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [editingMsg, setEditingMsg] = useState(null);
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const messagesEndRef = useRef(null); 
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setIsScrolledUp(false);
+    setUnreadCount(0);
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    const isUp = scrollHeight - scrollTop - clientHeight > 100;
+    setIsScrolledUp(isUp);
+    if (!isUp) setUnreadCount(0);
+  };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [globalMessages]);
+    if (!isScrolledUp) {
+      scrollToBottom();
+    } else {
+      setUnreadCount(prev => prev + 1);
+    }
+  }, [globalMessages.length]);
 
   const getSenderInfo = (senderId) => {
     if (senderId === currentUser.id) {
@@ -59,9 +84,43 @@ export default function GlobalChat() {
   const handleSend = (e) => {
     e.preventDefault();
     if (!inputText.trim() && !attachment) return;
-    sendGlobalMessage(inputText.trim(), attachment);
+
+    if (editingMsg) {
+      editGlobalMessage(editingMsg.id, inputText.trim());
+      setEditingMsg(null);
+    } else {
+      sendGlobalMessage(inputText.trim(), attachment, replyingTo?.id || null);
+    }
+    
     setInputText('');
     setAttachment(null);
+    setReplyingTo(null);
+    if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+    }
+    if (!isScrolledUp) scrollToBottom();
+  };
+
+  const startEdit = (msg) => {
+    setEditingMsg(msg);
+    setInputText(msg.text);
+    setReplyingTo(null);
+    if (textareaRef.current) {
+        textareaRef.current.focus();
+    }
+  };
+
+  const handleInput = (e) => {
+    setInputText(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(e);
+    }
   };
 
   const visibleMessages = globalMessages.filter(msg => !currentUser.blockedUsers?.includes(msg.senderId));
@@ -86,7 +145,11 @@ export default function GlobalChat() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 pb-[80px] md:pb-6 relative">
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 pb-[80px] md:pb-6 relative scroll-smooth"
+      >
         {visibleMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-zinc-400">
             <svg className="w-12 h-12 mb-3 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,6 +171,8 @@ export default function GlobalChat() {
           const sender = getSenderInfo(msg.senderId);
           const isMe = sender.isMe;
           const isMenuOpen = activeMenu === msg.id;
+          const repliedMsg = msg.replyToId ? globalMessages.find(m => m.id === msg.replyToId) : null;
+          const repliedSender = repliedMsg ? getSenderInfo(repliedMsg.senderId) : null;
 
           return (
             <div
@@ -143,40 +208,65 @@ export default function GlobalChat() {
                     </span>
                   )}
 
-                  {!isMe && (
-                    <div className="relative">
-                      <button 
-                        onClick={() => setActiveMenu(isMenuOpen ? null : msg.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-zinc-100 text-zinc-400 transition-all"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                  <div className="relative">
+                    <button 
+                      onClick={() => setActiveMenu(isMenuOpen ? null : msg.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-zinc-100 text-zinc-400 transition-all"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
 
-                      {isMenuOpen && (
-                        <div className="absolute top-full left-0 mt-1 w-32 bg-white border border-zinc-200 rounded-xl shadow-lg py-1 z-50 overflow-hidden">
-                          <button 
-                            onClick={() => { reportUser(msg.senderId); setActiveMenu(null); }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
-                          >
-                            <Flag className="w-3.5 h-3.5" />
-                            Report User
-                          </button>
-                          <button 
-                            onClick={() => { blockUser(msg.senderId); setActiveMenu(null); }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
-                          >
-                            <Ban className="w-3.5 h-3.5" />
-                            Block User
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    {isMenuOpen && (
+                      <div className="absolute top-full left-0 mt-1 w-32 bg-white border border-zinc-200 rounded-xl shadow-lg py-1 z-50 overflow-hidden">
+                        {isMe ? (
+                          <>
+                            <button 
+                              onClick={() => { startEdit(msg); setActiveMenu(null); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-zinc-600 hover:bg-zinc-50 transition-colors"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => { deleteGlobalMessage(msg.id); setActiveMenu(null); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              Delete
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button 
+                              onClick={() => { reportUser(msg.senderId); setActiveMenu(null); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
+                            >
+                              <Flag className="w-3.5 h-3.5" />
+                              Report User
+                            </button>
+                            <button 
+                              onClick={() => { blockUser(msg.senderId); setActiveMenu(null); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                            >
+                              <Ban className="w-3.5 h-3.5" />
+                              Block User
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="relative group/bubble">
+                    {repliedMsg && repliedSender && (
+                        <div className={`mb-1 p-2 rounded-lg text-xs border-l-4 ${isMe ? 'bg-emerald-700/20 border-emerald-300 text-emerald-50' : 'bg-black/5 border-zinc-300 text-zinc-500'}`}>
+                            <p className="font-bold mb-0.5">{repliedSender.displayName}</p>
+                            <p className="truncate opacity-80">{repliedMsg.text}</p>
+                        </div>
+                    )}
                     <div
-                      className={`px-5 py-3 rounded-2xl text-[15px] leading-relaxed shadow-sm ${
+                      className={`px-5 py-3 rounded-2xl text-[15px] leading-relaxed shadow-sm whitespace-pre-wrap ${
                         isMe
                           ? 'bg-emerald-600 text-white rounded-br-sm'
                           : sender.isAnon
@@ -201,9 +291,10 @@ export default function GlobalChat() {
                           </div>
                       )}
                       {msg.text}
+                      {msg.isEdited && <span className={`text-[10px] ml-2 font-medium ${isMe ? 'text-emerald-200' : 'text-zinc-400'}`}>(edited)</span>}
                     </div>
 
-                    <div className={`absolute -top-5 ${isMe ? '-left-14' : '-right-14'} hidden group-hover/bubble:flex items-center gap-1 bg-white border border-zinc-200 rounded-full px-2 py-1 shadow-lg z-10 transition-all`}>
+                    <div className={`absolute -top-5 ${isMe ? '-left-14' : '-right-24'} hidden group-hover/bubble:flex items-center gap-1 bg-white border border-zinc-200 rounded-full px-2 py-1 shadow-lg z-10 transition-all`}>
                         {['👍', '❤️', '😂'].map(emoji => (
                             <button 
                                 key={emoji} 
@@ -213,6 +304,13 @@ export default function GlobalChat() {
                                 {emoji}
                             </button>
                         ))}
+                        <div className="w-[1px] h-4 bg-zinc-200 mx-1"></div>
+                        <button 
+                            onClick={() => { setReplyingTo(msg); setEditingMsg(null); textareaRef.current?.focus(); }}
+                            className="p-1 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-emerald-600 transition-colors"
+                        >
+                            <Reply className="w-3.5 h-3.5" />
+                        </button>
                     </div>
                 </div>
 
@@ -238,8 +336,55 @@ export default function GlobalChat() {
         <div ref={messagesEndRef} />
       </div>
 
+      {isScrolledUp && (
+        <div className="absolute bottom-24 right-6 z-20">
+          <button
+            onClick={scrollToBottom}
+            className="flex items-center justify-center w-10 h-10 bg-white border border-zinc-200 text-zinc-600 rounded-full shadow-lg hover:bg-zinc-50 hover:text-emerald-600 transition-all relative"
+          >
+            <ChevronDown className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* Input Area */}
       <div className="px-4 py-4 border-t border-zinc-200 bg-white flex-shrink-0 flex flex-col gap-2 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+
+        {replyingTo && (
+            <div className="flex items-center gap-3 p-2.5 bg-emerald-50/50 border-l-4 border-emerald-500 rounded-r-xl w-full max-w-5xl mx-auto shadow-sm text-sm">
+                <Reply className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                    <p className="font-bold text-emerald-800 text-xs">Replying to {getSenderInfo(replyingTo.senderId).displayName}</p>
+                    <p className="text-zinc-600 truncate">{replyingTo.text}</p>
+                </div>
+                <button 
+                    onClick={() => setReplyingTo(null)}
+                    className="p-1.5 rounded-full hover:bg-emerald-100 text-emerald-600 transition-colors"
+                >
+                    <X className="w-4 h-4" />
+                </button>
+            </div>
+        )}
+
+        {editingMsg && (
+            <div className="flex items-center gap-3 p-2.5 bg-amber-50/50 border-l-4 border-amber-500 rounded-r-xl w-full max-w-5xl mx-auto shadow-sm text-sm">
+                <Edit2 className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                    <p className="font-bold text-amber-800 text-xs">Editing Message</p>
+                </div>
+                <button 
+                    onClick={() => { setEditingMsg(null); setInputText(''); }}
+                    className="p-1.5 rounded-full hover:bg-amber-100 text-amber-600 transition-colors"
+                >
+                    <X className="w-4 h-4" />
+                </button>
+            </div>
+        )}
 
         {attachment && (
             <div className="flex items-center gap-3 p-2 bg-zinc-50 border border-zinc-200 rounded-xl w-fit shadow-sm">
@@ -282,15 +427,17 @@ export default function GlobalChat() {
             accept="image/*,.pdf,.doc,.docx"
           />
 
-          <div className="flex-1 relative">
-            <input
-              type="text"
+          <div className="flex-1 relative flex items-end">
+            <textarea
+              ref={textareaRef}
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Message #international-hub..."
-              className="w-full bg-zinc-50 border border-zinc-200 rounded-full pl-5 pr-12 py-3.5 text-[15px] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-inner"
+              onChange={handleInput}
+              onKeyDown={handleKeyDown}
+              placeholder={editingMsg ? "Edit message..." : "Message #international-hub..."}
+              rows={1}
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl pl-5 pr-12 py-3.5 text-[15px] text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-inner resize-none min-h-[50px] max-h-[120px]"
             />
-            <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors">
+            <button type="button" className="absolute right-4 bottom-3.5 text-zinc-400 hover:text-zinc-600 transition-colors">
               <Smile className="w-5 h-5" />
             </button>
           </div>
@@ -298,9 +445,9 @@ export default function GlobalChat() {
           <button
             type="submit"
             disabled={!inputText.trim() && !attachment}
-            className="p-3 rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 flex-shrink-0 shadow-md hover:shadow-lg text-white"
+            className="p-3 rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 flex-shrink-0 shadow-md hover:shadow-lg text-white self-end mb-1"
           >
-            <Send className="w-5 h-5 -ml-0.5" />
+            {editingMsg ? <Check className="w-5 h-5" /> : <Send className="w-5 h-5 -ml-0.5" />}
           </button>
         </form>
 

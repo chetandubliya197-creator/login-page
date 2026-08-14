@@ -1,16 +1,24 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Send, User, Paperclip, X, FileText, ArrowLeft, MoreVertical, Flag, Ban, Search, Phone, Video, Smile, MessageSquareText } from 'lucide-react';
+import { Send, User, Paperclip, X, FileText, ArrowLeft, MoreVertical, Flag, Ban, Search, Phone, Video, Smile, MessageSquareText, Reply, Edit2, Trash2, ChevronDown, Check } from 'lucide-react';
 
 export default function PrivateChat() {
-  const { currentUser, students, privateMessages, sendPrivateMessage, reportUser, blockUser } = useContext(AppContext);
+  const { currentUser, students, privateMessages, sendPrivateMessage, editPrivateMessage, deletePrivateMessage, reportUser, blockUser } = useContext(AppContext);
   const [activeChat, setActiveChat] = useState(null); 
   const [inputText, setInputText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [attachment, setAttachment] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [editingMsg, setEditingMsg] = useState(null);
+  const [isScrolledUp, setIsScrolledUp] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   const connectedStudents = students.filter(s => 
     s.connectionStatus === 'connected' && 
@@ -21,11 +29,24 @@ export default function PrivateChat() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setIsScrolledUp(false);
+    setUnreadCount(0);
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    const isUp = scrollHeight - scrollTop - clientHeight > 100;
+    setIsScrolledUp(isUp);
+    if (!isUp) setUnreadCount(0);
   };
 
   useEffect(() => {
+    if (!isScrolledUp) {
       scrollToBottom();
-  }, [privateMessages, activeChat]);
+    } else {
+      setUnreadCount(prev => prev + 1);
+    }
+  }, [privateMessages.length, activeChat]);
 
   // If the active chat gets blocked or suspended, clear the active chat
   useEffect(() => {
@@ -57,9 +78,42 @@ export default function PrivateChat() {
     e.preventDefault();
     if ((!inputText.trim() && !attachment) || !activeChat) return;
 
-    sendPrivateMessage(activeChat.id, inputText, attachment);
+    if (editingMsg) {
+      editPrivateMessage(editingMsg.id, inputText.trim());
+      setEditingMsg(null);
+    } else {
+      sendPrivateMessage(activeChat.id, inputText.trim(), attachment, replyingTo?.id || null);
+    }
+    
     setInputText('');
     setAttachment(null);
+    setReplyingTo(null);
+    if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+    }
+    if (!isScrolledUp) scrollToBottom();
+  };
+
+  const startEdit = (msg) => {
+    setEditingMsg(msg);
+    setInputText(msg.text);
+    setReplyingTo(null);
+    if (textareaRef.current) {
+        textareaRef.current.focus();
+    }
+  };
+
+  const handleInput = (e) => {
+    setInputText(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(e);
+    }
   };
 
   const currentConversation = activeChat 
@@ -203,7 +257,12 @@ export default function PrivateChat() {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6" onClick={() => setIsMenuOpen(false)}>
+                <div 
+                    ref={scrollContainerRef}
+                    onScroll={handleScroll}
+                    className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 relative scroll-smooth" 
+                    onClick={() => setIsMenuOpen(false)}
+                >
                     {currentConversation.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-zinc-400 text-sm font-medium">
                             No messages yet. Say hi to {activeChat.name.split(' ')[0]}!
@@ -215,6 +274,8 @@ export default function PrivateChat() {
                             </div>
                             {currentConversation.map((msg) => {
                                 const isMe = msg.senderId === currentUser.id;
+                                const repliedMsg = msg.replyToId ? currentConversation.find(m => m.id === msg.replyToId) : null;
+                                const repliedSenderName = repliedMsg ? (repliedMsg.senderId === currentUser.id ? currentUser.name : activeChat.name) : null;
 
                                 return (
                                     <div
@@ -225,30 +286,69 @@ export default function PrivateChat() {
                                             <img src={activeChat.avatar} className="w-8 h-8 rounded-full border border-zinc-200 mr-2 self-end mb-1" alt="" />
                                         )}
                                         <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                            <div
-                                                className={`max-w-[75%] rounded-2xl px-5 py-3 text-[14px] leading-relaxed shadow-sm border ${
-                                                    isMe
-                                                    ? 'bg-[#0f172a] text-white rounded-br-sm border-[#0f172a]'
-                                                    : 'bg-white border-zinc-200 text-zinc-900 rounded-bl-sm'
-                                                }`}
-                                            >
-                                                {msg.attachment && (
-                                                    <div className={`mb-3 ${msg.text ? `border-b pb-3 ${isMe ? 'border-zinc-700' : 'border-zinc-200'}` : ''}`}>
-                                                        {msg.attachment.type === 'image' ? (
-                                                            <img 
-                                                                src={msg.attachment.url} 
-                                                                alt="attachment" 
-                                                                className="max-h-64 rounded-xl object-cover shadow-sm border border-black/5"
-                                                            />
-                                                        ) : (
-                                                            <div className={`flex items-center gap-3 p-3 rounded-xl border ${isMe ? 'bg-zinc-800/50 border-zinc-700' : 'bg-zinc-50 border-zinc-200'}`}>
-                                                                <FileText className={`w-6 h-6 ${isMe ? 'text-white' : 'text-zinc-500'}`} />
-                                                                <span className={`text-sm font-medium truncate max-w-[200px] ${isMe ? 'text-white' : 'text-zinc-800'}`}>{msg.attachment.name}</span>
-                                                            </div>
-                                                        )}
+                                            <div className="relative group/bubble">
+                                                {repliedMsg && repliedSenderName && (
+                                                    <div className={`mb-1 p-2 rounded-lg text-xs border-l-4 ${isMe ? 'bg-[#1e293b]/20 border-zinc-500 text-[#0f172a]' : 'bg-black/5 border-zinc-300 text-zinc-500'}`}>
+                                                        <p className="font-bold mb-0.5">{repliedSenderName}</p>
+                                                        <p className="truncate opacity-80">{repliedMsg.text}</p>
                                                     </div>
                                                 )}
-                                                <p className="font-medium tracking-wide">{msg.text}</p>
+                                                <div
+                                                    className={`max-w-[75%] rounded-2xl px-5 py-3 text-[14px] leading-relaxed shadow-sm border whitespace-pre-wrap ${
+                                                        isMe
+                                                        ? 'bg-[#0f172a] text-white rounded-br-sm border-[#0f172a]'
+                                                        : 'bg-white border-zinc-200 text-zinc-900 rounded-bl-sm'
+                                                    }`}
+                                                >
+                                                    {msg.attachment && (
+                                                        <div className={`mb-3 ${msg.text ? `border-b pb-3 ${isMe ? 'border-zinc-700' : 'border-zinc-200'}` : ''}`}>
+                                                            {msg.attachment.type === 'image' ? (
+                                                                <img 
+                                                                    src={msg.attachment.url} 
+                                                                    alt="attachment" 
+                                                                    className="max-h-64 rounded-xl object-cover shadow-sm border border-black/5"
+                                                                />
+                                                            ) : (
+                                                                <div className={`flex items-center gap-3 p-3 rounded-xl border ${isMe ? 'bg-zinc-800/50 border-zinc-700' : 'bg-zinc-50 border-zinc-200'}`}>
+                                                                    <FileText className={`w-6 h-6 ${isMe ? 'text-white' : 'text-zinc-500'}`} />
+                                                                    <span className={`text-sm font-medium truncate max-w-[200px] ${isMe ? 'text-white' : 'text-zinc-800'}`}>{msg.attachment.name}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    <p className="font-medium tracking-wide">
+                                                        {msg.text}
+                                                        {msg.isEdited && <span className={`text-[10px] ml-2 font-medium ${isMe ? 'text-zinc-400' : 'text-zinc-400'}`}>(edited)</span>}
+                                                    </p>
+                                                </div>
+
+                                                <div className={`absolute top-1/2 -translate-y-1/2 ${isMe ? '-left-20' : '-right-20'} hidden group-hover/bubble:flex items-center gap-1 bg-white border border-zinc-200 rounded-full px-1 py-1 shadow-lg z-10 transition-all`}>
+                                                    <button 
+                                                        onClick={() => { setReplyingTo(msg); setEditingMsg(null); textareaRef.current?.focus(); }}
+                                                        className="p-1.5 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-emerald-600 transition-colors"
+                                                        title="Reply"
+                                                    >
+                                                        <Reply className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    {isMe && (
+                                                        <>
+                                                            <button 
+                                                                onClick={() => startEdit(msg)}
+                                                                className="p-1.5 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-blue-600 transition-colors"
+                                                                title="Edit"
+                                                            >
+                                                                <Edit2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => deletePrivateMessage(msg.id)}
+                                                                className="p-1.5 hover:bg-rose-50 rounded-full text-zinc-400 hover:text-rose-600 transition-colors"
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                             <span className="text-[10px] mt-1.5 font-semibold text-zinc-400 mx-1">
                                                 {msg.timestamp} {isMe && '• Read'}
@@ -262,7 +362,54 @@ export default function PrivateChat() {
                     <div ref={messagesEndRef} />
                 </div>
 
-                <div className="p-4 bg-white border-t border-zinc-200 pb-[76px] md:pb-4 flex flex-col gap-2 z-10">
+                {isScrolledUp && (
+                    <div className="absolute bottom-[90px] md:bottom-20 right-6 z-20">
+                    <button
+                        onClick={scrollToBottom}
+                        className="flex items-center justify-center w-10 h-10 bg-white border border-zinc-200 text-zinc-600 rounded-full shadow-lg hover:bg-zinc-50 hover:text-emerald-600 transition-all relative"
+                    >
+                        <ChevronDown className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                        )}
+                    </button>
+                    </div>
+                )}
+
+                <div className="p-4 bg-white border-t border-zinc-200 pb-[76px] md:pb-4 flex flex-col gap-2 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+                    
+                    {replyingTo && (
+                        <div className="flex items-center gap-3 p-2.5 bg-zinc-50 border-l-4 border-zinc-500 rounded-r-xl w-full max-w-5xl mx-auto shadow-sm text-sm">
+                            <Reply className="w-4 h-4 text-zinc-600 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <p className="font-bold text-zinc-800 text-xs">Replying to {replyingTo.senderId === currentUser.id ? currentUser.name : activeChat.name}</p>
+                                <p className="text-zinc-600 truncate">{replyingTo.text}</p>
+                            </div>
+                            <button 
+                                onClick={() => setReplyingTo(null)}
+                                className="p-1.5 rounded-full hover:bg-zinc-200 text-zinc-600 transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
+
+                    {editingMsg && (
+                        <div className="flex items-center gap-3 p-2.5 bg-amber-50/50 border-l-4 border-amber-500 rounded-r-xl w-full max-w-5xl mx-auto shadow-sm text-sm">
+                            <Edit2 className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <p className="font-bold text-amber-800 text-xs">Editing Message</p>
+                            </div>
+                            <button 
+                                onClick={() => { setEditingMsg(null); setInputText(''); }}
+                                className="p-1.5 rounded-full hover:bg-amber-100 text-amber-600 transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
 
                     {attachment && (
                         <div className="flex items-center gap-3 p-2 bg-zinc-50 border border-zinc-200 rounded-xl w-fit shadow-sm">
@@ -314,19 +461,23 @@ export default function PrivateChat() {
                             <Paperclip className="w-5 h-5" />
                         </button>
 
-                        <input
-                            type="text"
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                            placeholder="Type a message..."
-                            className="flex-1 bg-transparent border-none text-[#0f172a] px-2 py-2 text-[14px] focus:outline-none focus:ring-0 placeholder-zinc-400 font-medium"
-                        />
+                        <div className="flex-1 relative flex items-end w-full">
+                            <textarea
+                                ref={textareaRef}
+                                value={inputText}
+                                onChange={handleInput}
+                                onKeyDown={handleKeyDown}
+                                placeholder={editingMsg ? "Edit message..." : "Type a message..."}
+                                rows={1}
+                                className="w-full bg-transparent border-none text-[#0f172a] px-2 py-2.5 text-[14px] focus:outline-none focus:ring-0 placeholder-zinc-400 font-medium resize-none min-h-[40px] max-h-[120px]"
+                            />
+                        </div>
                         <button
                             type="submit"
                             disabled={!inputText.trim() && !attachment}
-                            className="p-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:hover:bg-emerald-500 text-white transition-colors flex-shrink-0 mr-1"
+                            className="p-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:hover:bg-emerald-500 text-white transition-colors flex-shrink-0 mr-1 self-end mb-1"
                         >
-                            <Send className="w-4 h-4" />
+                            {editingMsg ? <Check className="w-4 h-4" /> : <Send className="w-4 h-4 -ml-0.5" />}
                         </button>
                     </form>
                 </div>

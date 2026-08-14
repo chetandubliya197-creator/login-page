@@ -264,7 +264,7 @@ export function AppProvider({ children }) {
     showToast('Logged out successfully.', 'success');
   };
 
-  const sendGlobalMessage = (text, attachment = null) => {
+  const sendGlobalMessage = (text, attachment = null, replyToId = null) => {
     if ((!text.trim() && !attachment) || !currentUser) return;
 
     // Strict Guideline: Rate Limiting for Global Messages (Max 5 per minute)
@@ -281,10 +281,26 @@ export function AppProvider({ children }) {
       senderId: currentUser.id,
       text: text.trim(),
       attachment,
+      replyToId,
+      isEdited: false,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       reactions: [],
     };
     setGlobalMessages(prev => [...prev, newMsg]);
+  };
+
+  const editGlobalMessage = (id, newText) => {
+    setGlobalMessages(prev => prev.map(msg => 
+      msg.id === id && msg.senderId === currentUser.id 
+        ? { ...msg, text: newText.trim(), isEdited: true }
+        : msg
+    ));
+    showToast('Message updated', 'success');
+  };
+
+  const deleteGlobalMessage = (id) => {
+    setGlobalMessages(prev => prev.filter(msg => msg.id !== id || msg.senderId !== currentUser.id));
+    showToast('Message deleted', 'success');
   };
 
   const addReactionToMessage = (messageId, emoji) => {
@@ -357,7 +373,7 @@ export function AppProvider({ children }) {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  const sendPrivateMessage = (receiverId, text, attachment = null) => {
+  const sendPrivateMessage = (receiverId, text, attachment = null, replyToId = null) => {
     if ((!text.trim() && !attachment) || !currentUser) return;
 
     // Check if blocked
@@ -372,10 +388,26 @@ export function AppProvider({ children }) {
       conversationId: receiverId,
       text: text.trim(),
       attachment,
+      replyToId,
+      isEdited: false,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       read: true,
     };
     setPrivateMessages(prev => [...prev, newMsg]);
+  };
+
+  const editPrivateMessage = (id, newText) => {
+    setPrivateMessages(prev => prev.map(msg => 
+      msg.id === id && msg.senderId === currentUser.id 
+        ? { ...msg, text: newText.trim(), isEdited: true }
+        : msg
+    ));
+    showToast('Message updated', 'success');
+  };
+
+  const deletePrivateMessage = (id) => {
+    setPrivateMessages(prev => prev.filter(msg => msg.id !== id || msg.senderId !== currentUser.id));
+    showToast('Message deleted', 'success');
   };
 
   const reportUser = (userId) => {
@@ -420,6 +452,8 @@ export function AppProvider({ children }) {
         handleLogin,
         handleLogout,
         sendGlobalMessage,
+        editGlobalMessage,
+        deleteGlobalMessage,
         addReactionToMessage,
         sendConnectRequest,
         toggleSocietyJoin,
@@ -427,6 +461,8 @@ export function AppProvider({ children }) {
         completeOnboarding,
         markNotificationsAsRead,
         sendPrivateMessage,
+        editPrivateMessage,
+        deletePrivateMessage,
         reportUser,
         blockUser,
       }}
