@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, ArrowRight, Zap } from 'lucide-react';
+import { Menu, X, ArrowRight, GraduationCap, Activity } from 'lucide-react';
 
 export default function Navbar({ onLoginClick }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,16 +14,12 @@ export default function Navbar({ onLoginClick }) {
     <nav className="fixed top-0 left-0 right-0 z-40 glassmorphism bg-white/80 border-b border-zinc-200 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center space-x-3 cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-              <Zap className="w-5 h-5 text-emerald-600 fill-emerald-600" />
+          <div className="flex items-center gap-2 cursor-pointer">
+            <div className="relative flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-[#0f172a]" />
+              <Activity className="w-8 h-8 text-[#0f172a] absolute -bottom-2 -right-2" strokeWidth={3} />
             </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-xl font-extrabold tracking-tight text-zinc-900 transition-colors duration-300">
-                Campus<span className="text-emerald-600">Pulse</span>
-              </span>
-              <span className="text-[10px] text-zinc-500 font-medium tracking-widest uppercase">Your College Network</span>
-            </div>
+            <h1 className="text-xl md:text-2xl font-black tracking-tight text-zinc-900 ml-2">CampusPulse</h1>
           </div>
 
           <div className="hidden md:flex items-center space-x-10">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Users, MessageSquare, Building2, ShieldCheck, Zap, Globe } from 'lucide-react';
+import { ArrowRight, Users, MessageSquare, Building2, ShieldCheck, Zap, Globe, GraduationCap, Activity } from 'lucide-react';
 
 const FEATURES = [
   {
@@ -145,8 +145,9 @@ export default function HeroSection({ onStartClick }) {
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
           
-          <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mb-6 relative z-10 shadow-inner">
-            <Zap className="w-8 h-8 text-emerald-600 fill-emerald-600" />
+          <div className="relative flex items-center justify-center mb-6 z-10">
+              <GraduationCap className="w-12 h-12 text-[#0f172a]" />
+              <Activity className="w-16 h-16 text-[#0f172a] absolute -bottom-4 -right-4" strokeWidth={3} />
           </div>
           <h3 className="text-3xl sm:text-4xl font-black text-zinc-950 mb-4 tracking-tight relative z-10">
             Ready to find your people?
