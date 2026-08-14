@@ -225,37 +225,64 @@ export function AppProvider({ children }) {
     m => m.senderId !== currentUser?.id && !m.read
   ).length;
 
-  const handleLogin = (emailOrId, password, name = null) => {
-    if (!emailOrId.trim()) {
-      showToast('Please enter your email or college ID.', 'error');
+  const handleRegister = async (name, email, password) => {
+    try {
+      const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
+      if (!emailRegex.test(email)) {
+        showToast('Please use your @indoreinstitute.com email.', 'error');
+        return false;
+      }
+
+      const collegeId = email.split('@')[0].toUpperCase();
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, collegeId, password }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        showToast(data.message || 'Registration failed', 'error');
+        return false;
+      }
+      
+      setCurrentUser(data);
+      showToast(`Welcome ${data.name}! 🎉`, 'success');
+      return true;
+    } catch (error) {
+      console.error(error);
+      showToast('Network error. Is the backend running?', 'error');
+      return false;
+    }
+  };
+
+  const handleLogin = async (emailOrId, password) => {
+    if (!emailOrId.trim() || !password.trim()) {
+      showToast('Please enter your email and password.', 'error');
       return false;
     }
     
-    // Strict Guideline: Email must match the indoreinstitute format.
-    const isEmail = emailOrId.includes('@');
-    const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
-    if (isEmail && !emailRegex.test(emailOrId)) {
-      showToast('Please use your @indoreinstitute.com email.', 'error');
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailOrId, password }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        showToast(data.message || 'Login failed', 'error');
+        return false;
+      }
+      
+      setCurrentUser(data);
+      showToast(`Welcome back, ${data.name}! 👋`, 'success');
+      return true;
+    } catch (error) {
+      console.error(error);
+      showToast('Network error. Is the backend running?', 'error');
       return false;
     }
-
-    const mockUser = {
-      id: 'std_001',
-      name: name || 'Chetan Sharma',
-      email: isEmail ? emailOrId : 'chetan.sharmacs2024@indoreinstitute.com',
-      collegeId: isEmail ? 'COL2024001' : emailOrId.toUpperCase(),
-      anonUsername: 'SilentPioneer_42',
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name || 'Chetan'}`,
-      branch: 'Computer Science',
-      year: '3rd Year',
-      bio: 'Frontend designer and React developer. Building college ecosystem.',
-      isOnboarded: !name,
-      interests: ['React', 'UI/UX', 'Open Source'],
-      blockedUsers: [],
-    };
-    setCurrentUser(mockUser);
-    showToast(`Welcome back, ${mockUser.name}! 👋`, 'success');
-    return true;
   };
 
   const handleLogout = () => {
@@ -459,6 +486,7 @@ export function AppProvider({ children }) {
         toast,
         showToast,
         handleLogin,
+        handleRegister,
         handleLogout,
         sendGlobalMessage,
         editGlobalMessage,

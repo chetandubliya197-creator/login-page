@@ -4,7 +4,7 @@ import { X, Mail, Lock, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose }) {
 
-  const { handleLogin, showToast } = useContext(AppContext);
+  const { handleLogin, handleRegister, showToast } = useContext(AppContext);
 
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -51,28 +51,26 @@ export default function AuthModal({ isOpen, onClose }) {
     setOtpCountdown(0);
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
     if (!emailRegex.test(loginEmail)) {
       showToast("Please use your @indoreinstitute.com email.", 'error');
       return;
     }
-    const success = handleLogin(loginEmail, loginPassword);
+    const success = await handleLogin(loginEmail, loginPassword);
     if (success) {
       onClose();
-    } else {
-      showToast('Login failed. Please check your credentials.', 'error');
     }
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     if (isOtpSent && otpCode !== '123456') {
       showToast("Invalid OTP! Please enter '123456' for demo.", 'error');
       return;
     }
-    const success = handleLogin(registerEmail, registerPassword, registerName);
+    const success = await handleRegister(registerName, registerEmail, registerPassword);
     if (success) {
       onClose();
     }
