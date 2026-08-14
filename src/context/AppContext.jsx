@@ -206,7 +206,7 @@ export function AppProvider({ children }) {
   const [globalMessageHistory, setGlobalMessageHistory] = useLocalStorage('cp_global_msg_hist', []);
   const [connectionHistory, setConnectionHistory] = useLocalStorage('cp_conn_hist', []);
 
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [toast, setToast] = useState(null);
 
   const [societyAnnouncements] = useState(INITIAL_ANNOUNCEMENTS);
@@ -235,7 +235,7 @@ export function AppProvider({ children }) {
     const isEmail = emailOrId.includes('@');
     const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
     if (isEmail && !emailRegex.test(emailOrId)) {
-      showToast('Registration/Login restricted to name.surnamebranchyear@indoreinstitute.com format.', 'error');
+      showToast('Please use your @indoreinstitute.com email.', 'error');
       return false;
     }
 
