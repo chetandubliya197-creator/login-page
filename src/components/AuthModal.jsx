@@ -94,10 +94,10 @@ export default function AuthModal({ isOpen, onClose }) {
         </button>
 
         <div 
-          className={`absolute z-20 bg-emerald-600 transition-all duration-700 ease-in-out shadow-xl ${
+          className={`hidden md:block absolute z-20 bg-emerald-600 transition-all duration-700 ease-in-out shadow-xl ${
             isLogin 
-              ? 'left-0 md:left-1/2 top-1/2 md:top-0 h-1/2 md:h-full w-full md:w-1/2' 
-              : 'left-0 top-0 h-1/2 md:h-full w-full md:w-1/2'
+              ? 'left-1/2 top-0 h-full w-1/2' 
+              : 'left-0 top-0 h-full w-1/2'
           }`}
         >
 
@@ -147,7 +147,7 @@ export default function AuthModal({ isOpen, onClose }) {
         </div>
 
         {/* Login Form */}
-        <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center px-8 sm:px-14 pt-32 pb-3 md:pt-32 md:pb-2 z-10 bg-white">
+        <div className={`absolute md:relative inset-0 md:inset-auto w-full md:w-1/2 h-full flex flex-col justify-center px-6 sm:px-14 py-12 md:pt-32 md:pb-2 z-10 bg-white overflow-y-auto transition-all duration-700 ease-in-out ${isLogin ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 -z-10 pointer-events-none'}`}>
           <form onSubmit={handleLoginSubmit} className="space-y-6">
 
             <div 
@@ -180,7 +180,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 htmlFor="login_email"
                 className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
-                College Email (@indoreinstitute.com)
+                College Email
               </label>
               <Mail className="absolute right-0 top-3 w-5 h-5 text-zinc-400 peer-focus:text-emerald-600 transition-colors" />
             </div>
@@ -241,11 +241,26 @@ export default function AuthModal({ isOpen, onClose }) {
             >
               Sign In
             </button>
+
+            {/* Mobile Toggle */}
+            <div 
+              className={`md:hidden text-center mt-6 transition-all duration-700 ease-out ${
+                isLogin ? 'translate-x-0 opacity-100 blur-0' : '-translate-x-[120%] opacity-0 blur-md pointer-events-none'
+              }`}
+              style={{ transitionDelay: isLogin ? '600ms' : '0ms' }}
+            >
+              <p className="text-zinc-600 text-sm">
+                Don't have an account?{' '}
+                <button type="button" onClick={() => handleModeChange(false)} className="text-emerald-600 font-bold hover:underline">
+                  Sign Up
+                </button>
+              </p>
+            </div>
           </form>
         </div>
 
         {/* Register Form */}
-        <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col justify-center px-8 sm:px-14 pt-32 pb-3 md:pt-32 md:pb-2 z-10 md:ml-auto bg-white">
+        <div className={`absolute md:relative inset-0 md:inset-auto w-full md:w-1/2 h-full flex flex-col justify-center px-6 sm:px-14 py-12 md:pt-32 md:pb-2 z-10 md:ml-auto bg-white overflow-y-auto transition-all duration-700 ease-in-out ${!isLogin ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 -z-10 pointer-events-none'}`}>
           <form onSubmit={handleRegisterSubmit} className="space-y-6">
 
             <div 
@@ -303,7 +318,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 htmlFor="register_email"
                 className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
               >
-                College Email (@indoreinstitute.com)
+                College Email
               </label>
 
               <button
@@ -382,6 +397,21 @@ export default function AuthModal({ isOpen, onClose }) {
             >
               Sign Up
             </button>
+
+            {/* Mobile Toggle */}
+            <div 
+              className={`md:hidden text-center mt-6 transition-all duration-700 ease-out ${
+                !isLogin ? 'translate-x-0 opacity-100 blur-0' : 'translate-x-[120%] opacity-0 blur-md pointer-events-none'
+              }`}
+              style={{ transitionDelay: !isLogin ? '600ms' : '0ms' }}
+            >
+              <p className="text-zinc-600 text-sm">
+                Already have an account?{' '}
+                <button type="button" onClick={() => handleModeChange(true)} className="text-emerald-600 font-bold hover:underline">
+                  Sign In
+                </button>
+              </p>
+            </div>
           </form>
         </div>
       </div>
