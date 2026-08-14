@@ -211,27 +211,27 @@ export default function Sidebar({ onLogout, onNewPost }) {
                         </span>
                     </button>
                 ))}
-            </nav>
-        </div>
 
-        {/* Footer Area */}
-        <div className="px-4 py-4 border-t border-zinc-100 bg-white flex flex-col gap-2">
-            
-            <button 
-                onClick={() => setActiveTab('help')}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[13px] font-bold transition-all w-full
-                    ${activeTab === 'help' 
-                        ? 'bg-emerald-50 text-emerald-600' 
-                        : 'text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50'
-                    }`}
-            >
-                <HelpCircle className="w-4 h-4" />
-                Help Center
-            </button>
+                <div className="h-px bg-zinc-100 my-2"></div>
+
+                <button 
+                    onClick={() => setActiveTab('help')}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-bold transition-all duration-200 w-full text-left group
+                        ${activeTab === 'help' 
+                            ? 'bg-emerald-50 text-emerald-600' 
+                            : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
+                        }`}
+                >
+                    <span className={`transition-transform duration-200 ${activeTab === 'help' ? 'scale-110' : 'group-hover:scale-105'}`}>
+                        <HelpCircle className="w-5 h-5" />
+                    </span>
+                    Help Center
+                </button>
+            </nav>
 
             {currentUser && (
-                <div className="flex items-center justify-between gap-3 p-3 mt-2 rounded-xl bg-zinc-50 border border-zinc-100">
-                    <div className="flex items-center gap-3 overflow-hidden cursor-pointer flex-1" onClick={() => setActiveTab('profile')}>
+                <div className="flex items-center justify-between gap-3 p-3 mt-4 mb-2 rounded-xl bg-zinc-50 border border-zinc-100">
+                    <div className="flex items-center gap-3 overflow-hidden cursor-pointer flex-1" onClick={() => { setActiveTab('profile'); setIsMobileMenuOpen(false); }}>
                         <img
                             src={currentUser.avatar}
                             alt={currentUser.name}
