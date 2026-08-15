@@ -19,15 +19,15 @@ const createPost = async (req, res) => {
 
         const populatedPost = await post.populate('author', 'name avatar role branch year');
         
-        // Format to match frontend expectations
+        // Format - admin always appears as Team CampusPulse
         const formatted = {
             id: populatedPost._id.toString(),
-            author: populatedPost.author.name,
+            author: populatedPost.author.role === 'admin' ? 'Team CampusPulse' : populatedPost.author.name,
             authorId: populatedPost.author._id.toString(),
             role: populatedPost.author.role === 'admin' ? 'Founder' : `${populatedPost.author.branch}, ${populatedPost.author.year}`,
             avatar: populatedPost.author.avatar,
             content: populatedPost.content,
-            time: 'Just now', // frontend can parse actual Date
+            time: 'Just now',
             createdAt: populatedPost.createdAt,
             likes: [],
             comments: []
@@ -63,9 +63,9 @@ const getPosts = async (req, res) => {
 
             return {
                 id: post._id.toString(),
-                author: post.author.name,
+                author: post.author.role === 'admin' ? 'Team CampusPulse' : post.author.name,
                 authorId: post.author._id.toString(),
-                role: post.author.role === 'admin' ? 'Founder / Admin' : `${post.author.branch}, ${post.author.year}`,
+                role: post.author.role === 'admin' ? 'Founder' : `${post.author.branch}, ${post.author.year}`,
                 avatar: post.author.avatar,
                 content: post.content,
                 time: timeStr,

@@ -34,6 +34,9 @@ app.use(cors({
     credentials: true
 }));
 
+// Serve static files (admin avatar, etc.)
+app.use('/public', express.static('public'));
+
 // Basic route
 app.get('/', (req, res) => {
     res.send('CampusPulse API is running...');
