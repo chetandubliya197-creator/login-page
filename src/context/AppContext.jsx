@@ -35,7 +35,8 @@ export function AppProvider({ children }) {
     m => m.senderId !== currentUser?.id && !m.read
   ).length;
 
-  const API_BASE_URL = 'https://campuspulse-jnfo.onrender.com';
+  // Pointing to localhost so you can test all the newly added backend features locally
+  const API_BASE_URL = 'http://localhost:5000';
 
   const fetchStudents = useCallback(async () => {
     try {
