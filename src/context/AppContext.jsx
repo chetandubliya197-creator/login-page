@@ -422,9 +422,29 @@ export function AppProvider({ children }) {
     showToast('Profile updated successfully!', 'success');
   };
 
-  const completeOnboarding = (onboardingData) => {
-    setCurrentUser(prev => ({ ...prev, ...onboardingData, isOnboarded: true }));
-    showToast('Welcome to CampusPulse! 🎉', 'success');
+  const completeOnboarding = async (onboardingData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/onboarding`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentUser?.token}`
+        },
+        body: JSON.stringify(onboardingData),
+      });
+
+      if (!response.ok) {
+        showToast('Failed to save profile. Please try again.', 'error');
+        return;
+      }
+
+      const updatedUser = await response.json();
+      setCurrentUser(prev => ({ ...prev, ...updatedUser, token: prev.token, isOnboarded: true }));
+      showToast('Welcome to CampusPulse! 🎉', 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Network error while saving profile.', 'error');
+    }
   };
 
   const markNotificationsAsRead = () => {
