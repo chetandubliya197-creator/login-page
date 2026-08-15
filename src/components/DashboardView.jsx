@@ -21,7 +21,7 @@ export default function DashboardView() {
       setIsSubmitting(false);
   };
 
-  const API_BASE_URL = 'http://localhost:5000';
+  const API_BASE_URL = 'https://campuspulse-jnfo.onrender.com';
   const handleDeletePost = async (postId) => {
       if (!window.confirm("Are you sure you want to delete this post?")) return;
       try {
