@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
-const User = require('./backend/models/User.model');
+const User = require('./models/User.model');
 
 const makeAdmin = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to DB');
         
         // Find the first user or change this email to yours
