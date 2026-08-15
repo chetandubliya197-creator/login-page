@@ -227,7 +227,36 @@ export function AppProvider({ children }) {
 
   const API_BASE_URL = 'https://campuspulse-jnfo.onrender.com';
 
-  const handleRegister = async (name, email, password) => {
+  const requestOtp = async (email) => {
+    try {
+      const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
+      if (!emailRegex.test(email)) {
+        showToast('Please use your @indoreinstitute.com email.', 'error');
+        return false;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        showToast(data.message || 'Failed to send OTP', 'error');
+        return false;
+      }
+
+      showToast('OTP sent successfully to your email', 'success');
+      return true;
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      showToast('Server error. Please try again later.', 'error');
+      return false;
+    }
+  };
+
+  const handleRegister = async (name, email, password, otp) => {
     try {
       const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
       if (!emailRegex.test(email)) {
@@ -239,7 +268,7 @@ export function AppProvider({ children }) {
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, collegeId, password }),
+        body: JSON.stringify({ name, email, collegeId, password, otp }),
       });
       const data = await response.json();
       
@@ -488,6 +517,7 @@ export function AppProvider({ children }) {
         toast,
         showToast,
         handleLogin,
+        requestOtp,
         handleRegister,
         handleLogout,
         sendGlobalMessage,

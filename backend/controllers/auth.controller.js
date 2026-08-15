@@ -1,5 +1,17 @@
 const User = require('../models/User.model');
+const Otp = require('../models/Otp.model');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+
+// Nodemailer transporter setup
+// User needs to provide EMAIL_USER and EMAIL_PASS in .env
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 // Generate JWT
 const generateToken = (id) => {
@@ -13,10 +25,19 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
     try {
-        const { name, email, collegeId, password } = req.body;
+        const { name, email, collegeId, password, otp } = req.body;
 
-        if (!name || !email || !collegeId || !password) {
-            return res.status(400).json({ message: 'Please provide all fields' });
+        if (!name || !email || !collegeId || !password || !otp) {
+            return res.status(400).json({ message: 'Please provide all fields including OTP' });
+        }
+
+        // Verify OTP
+        const otpRecord = await Otp.findOne({ email });
+        if (!otpRecord) {
+            return res.status(400).json({ message: 'OTP expired or not found. Please request a new one.' });
+        }
+        if (otpRecord.otp !== otp) {
+            return res.status(400).json({ message: 'Invalid OTP' });
         }
 
         // Check if user exists
@@ -36,6 +57,9 @@ const registerUser = async (req, res) => {
         await user.save();
 
         if (user) {
+            // Delete OTP after successful registration
+            await Otp.deleteOne({ email });
+
             const token = generateToken(user._id);
             res.cookie('token', token, {
                 httpOnly: true,
@@ -186,10 +210,66 @@ const completeOnboarding = async (req, res) => {
     }
 };
 
+// @desc    Send OTP to email
+// @route   POST /api/auth/send-otp
+// @access  Public
+const sendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+
+        // Check if user already exists
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists with this email' });
+        }
+
+        // Generate 6 digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Delete any existing OTP for this email
+        await Otp.deleteOne({ email });
+
+        // Save new OTP
+        await Otp.create({
+            email,
+            otp
+        });
+
+        // Send Email
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'CampusPulse - Your Verification Code',
+            html: `
+                <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+                    <h2>Welcome to CampusPulse!</h2>
+                    <p>Your verification code is:</p>
+                    <h1 style="color: #4CAF50; font-size: 40px; letter-spacing: 5px;">${otp}</h1>
+                    <p>This code will expire in 5 minutes.</p>
+                    <p>If you didn't request this, please ignore this email.</p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ message: 'OTP sent successfully' });
+
+    } catch (error) {
+        console.error('Error sending OTP:', error);
+        res.status(500).json({ message: 'Failed to send OTP. Please check your email configuration.' });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     logoutUser,
     getUserProfile,
-    completeOnboarding
+    completeOnboarding,
+    sendOtp
 };

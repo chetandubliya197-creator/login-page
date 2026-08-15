@@ -4,7 +4,7 @@ import { X, Mail, Lock, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose }) {
 
-  const { handleLogin, handleRegister, showToast } = useContext(AppContext);
+  const { handleLogin, handleRegister, showToast, requestOtp } = useContext(AppContext);
 
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -32,16 +32,19 @@ export default function AuthModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (!registerEmail) return;
     const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
     if (!emailRegex.test(registerEmail)) {
       showToast("Please use your @indoreinstitute.com email.", 'error');
       return;
     }
-    setIsOtpSent(true);
-    setOtpCountdown(30);
-    showToast(`OTP sent to ${registerEmail}! Use code: 123456`, 'info');
+    const success = await requestOtp(registerEmail);
+    if (success) {
+      setIsOtpSent(true);
+      setOtpCountdown(30);
+      showToast(`OTP sent to ${registerEmail}!`, 'info');
+    }
   };
 
   const handleModeChange = (loginState) => {
@@ -66,11 +69,11 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    if (isOtpSent && otpCode !== '123456') {
-      showToast("Invalid OTP! Please enter '123456' for demo.", 'error');
+    if (isOtpSent && !otpCode) {
+      showToast("Please enter the OTP.", 'error');
       return;
     }
-    const success = await handleRegister(registerName, registerEmail, registerPassword);
+    const success = await handleRegister(registerName, registerEmail, registerPassword, otpCode);
     if (success) {
       onClose();
     }

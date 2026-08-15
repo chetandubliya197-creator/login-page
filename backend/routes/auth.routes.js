@@ -5,10 +5,12 @@ const {
     loginUser, 
     logoutUser, 
     getUserProfile, 
-    completeOnboarding 
+    completeOnboarding,
+    sendOtp 
 } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 
+router.post('/send-otp', sendOtp);
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);
