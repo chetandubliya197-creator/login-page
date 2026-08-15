@@ -401,6 +401,22 @@ export function AppProvider({ children }) {
     showToast('Logged out successfully.', 'success');
   };
 
+  const createDummyAccount = () => {
+    const dummyUser = {
+      _id: 'dummy_' + Date.now(),
+      name: 'Test Admin',
+      email: 'test@indoreinstitute.com',
+      collegeId: '0832CS999999',
+      role: 'user',
+      isOnboarded: false,
+      token: 'dummy_token',
+      isDummy: true
+    };
+    setCurrentUser(dummyUser);
+    setActiveTab('chat');
+    showToast('Dummy session started! Sandbox mode active.', 'success');
+  };
+
   const sendGlobalMessage = (text, attachment = null, replyToId = null) => {
     if ((!text.trim() && !attachment) || !currentUser || !socketRef.current) return;
 
@@ -532,6 +548,16 @@ export function AppProvider({ children }) {
   };
 
   const completeOnboarding = async (onboardingData) => {
+    if (currentUser?.isDummy) {
+      setCurrentUser(prev => ({ 
+        ...prev, 
+        ...onboardingData, 
+        isOnboarded: true 
+      }));
+      showToast('Dummy Onboarding Complete! 🚀', 'success');
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/onboarding`, {
         method: 'PUT',
@@ -716,6 +742,7 @@ export function AppProvider({ children }) {
         handleRegister,
         handleResetPassword,
         handleLogout,
+        createDummyAccount,
         sendGlobalMessage,
         editGlobalMessage,
         deleteGlobalMessage,

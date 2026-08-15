@@ -3,7 +3,7 @@ import { AppContext } from '../context/AppContext';
 import { Shield, Search, Ban, CheckCircle, AlertTriangle, MessageSquare } from 'lucide-react';
 
 export default function AdminPanel() {
-  const { currentUser, fetchAdminUsers, toggleSuspendUserAdmin } = useContext(AppContext);
+  const { currentUser, fetchAdminUsers, toggleSuspendUserAdmin, createDummyAccount } = useContext(AppContext);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,9 +47,9 @@ export default function AdminPanel() {
   return (
     <div className="flex flex-col h-full bg-zinc-50 md:pt-0 pt-[53px]">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-zinc-200 bg-white/80 backdrop-blur-md flex items-center justify-between z-10 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-rose-100 text-rose-600 rounded-xl">
+      <div className="px-6 py-4 border-b border-zinc-200 bg-white/80 backdrop-blur-md flex flex-col sm:flex-row gap-4 items-center justify-between z-10 shadow-sm">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="p-2 bg-rose-100 text-rose-600 rounded-xl hidden sm:block">
             <Shield className="w-6 h-6" />
           </div>
           <div>
@@ -57,8 +57,16 @@ export default function AdminPanel() {
             <p className="text-xs text-zinc-500 font-medium">Manage students & moderation</p>
           </div>
         </div>
-        <div className="px-3 py-1 bg-zinc-100 rounded-full text-xs font-bold text-zinc-600 border border-zinc-200">
-          {users.length} Users Total
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button 
+            onClick={createDummyAccount}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm whitespace-nowrap"
+          >
+            Test App as Dummy
+          </button>
+          <div className="px-3 py-2 bg-zinc-100 rounded-xl text-xs font-bold text-zinc-600 border border-zinc-200 whitespace-nowrap">
+            {users.length} Users
+          </div>
         </div>
       </div>
 
