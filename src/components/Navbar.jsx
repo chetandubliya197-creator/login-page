@@ -72,7 +72,7 @@ export default function Navbar({ onLoginClick }) {
 
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? 'max-h-72 opacity-100 border-t border-zinc-200 bg-white shadow-xl' : 'max-h-0 opacity-0 pointer-events-none'
+          isOpen ? 'max-h-96 opacity-100 border-t border-zinc-200 bg-white shadow-xl flex flex-col' : 'max-h-0 opacity-0 pointer-events-none flex flex-col'
         }`}
       >
         <div className="px-6 py-6 space-y-4">
