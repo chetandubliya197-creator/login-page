@@ -1,5 +1,6 @@
 import React from 'react';
 import { HelpCircle, Book, ShieldAlert, Mail, ChevronRight, MessageSquareText } from 'lucide-react';
+import { Wrench } from 'lucide-react';
 
 const FAQS = [
   {
@@ -17,12 +18,38 @@ const FAQS = [
   {
     question: 'Can I change my anonymous username?',
     answer: 'Currently, anonymous usernames are auto-generated to maintain privacy and cannot be manually changed. You can, however, update your public display name in Settings.'
+  },
+  {
+    question: 'How does anonymity work in Global Chat?',
+    answer: 'Global Chat is 100% anonymous to other students. They will only see your anonymous avatar and auto-generated username. However, admins have the authority to trace messages back to the original sender if there is a report of bullying or harassment.'
+  }
+];
+
+const TECH_ISSUES = [
+  {
+    issue: 'I am not receiving the OTP email.',
+    solution: 'Please check your Spam or Junk folder. Sometimes college email filters block automated emails. Also, double-check that you entered your email address correctly without any typos.'
+  },
+  {
+    issue: 'How do I install the CampusPulse app on my phone?',
+    solution: 'CampusPulse is a Progressive Web App. Open the website in Chrome (Android) or Safari (iOS). You should see an "Install App" prompt. If not, tap the browser menu (3 dots or share button) and select "Add to Home Screen".'
+  },
+  {
+    issue: 'Notifications are not working.',
+    solution: 'Make sure you have allowed notification permissions in your browser settings for this site. Also, check if your phone is in "Do Not Disturb" or "Battery Saver" mode, which might block background notifications.'
   }
 ];
 
 export default function HelpCenterView() {
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full bg-zinc-50 md:pt-0 pt-[53px] overflow-y-auto pb-[60px] md:pb-0">
+    <div className="flex flex-col h-full bg-zinc-50 md:pt-0 pt-[53px] overflow-y-auto pb-[60px] md:pb-0 scroll-smooth">
       
       {/* Header */}
       <div className="px-6 md:px-12 py-8 bg-white flex-shrink-0 sticky top-0 z-10 border-b border-zinc-200 shadow-sm">
@@ -43,22 +70,40 @@ export default function HelpCenterView() {
 
         {/* Quick Links */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="flex flex-col items-center justify-center gap-3 p-6 bg-white border border-zinc-200 rounded-3xl hover:border-emerald-500 hover:shadow-md transition-all group">
+            <button onClick={() => scrollToSection('faqs')} className="flex flex-col items-center justify-center gap-3 p-6 bg-white border border-zinc-200 rounded-3xl hover:border-emerald-500 hover:shadow-md transition-all group">
                 <Book className="w-8 h-8 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
                 <span className="font-bold text-zinc-900">Platform Guide</span>
             </button>
-            <button className="flex flex-col items-center justify-center gap-3 p-6 bg-white border border-zinc-200 rounded-3xl hover:border-emerald-500 hover:shadow-md transition-all group">
+            <button onClick={() => scrollToSection('guidelines')} className="flex flex-col items-center justify-center gap-3 p-6 bg-white border border-zinc-200 rounded-3xl hover:border-emerald-500 hover:shadow-md transition-all group">
                 <ShieldAlert className="w-8 h-8 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
                 <span className="font-bold text-zinc-900">Safety & Privacy</span>
             </button>
-            <button className="flex flex-col items-center justify-center gap-3 p-6 bg-white border border-zinc-200 rounded-3xl hover:border-emerald-500 hover:shadow-md transition-all group">
-                <MessageSquareText className="w-8 h-8 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
-                <span className="font-bold text-zinc-900">Community Forums</span>
+            <button onClick={() => scrollToSection('tech-issues')} className="flex flex-col items-center justify-center gap-3 p-6 bg-white border border-zinc-200 rounded-3xl hover:border-emerald-500 hover:shadow-md transition-all group">
+                <Wrench className="w-8 h-8 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
+                <span className="font-bold text-zinc-900">Tech Issues</span>
             </button>
         </div>
 
+        {/* Tech Issues */}
+        <section id="tech-issues">
+            <h3 className="text-[16px] font-black text-zinc-950 tracking-tight mb-6 flex items-center gap-2">
+                Troubleshooting & Tech Issues
+            </h3>
+            <div className="bg-white border border-zinc-200 rounded-3xl shadow-sm overflow-hidden divide-y divide-zinc-100">
+                {TECH_ISSUES.map((tech, idx) => (
+                    <div key={idx} className="p-6 hover:bg-zinc-50 transition-colors">
+                        <div className="flex gap-3 mb-2">
+                            <Wrench className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                            <h4 className="text-[15px] font-bold text-zinc-900">{tech.issue}</h4>
+                        </div>
+                        <p className="text-[14px] text-zinc-600 font-medium leading-relaxed pl-8">{tech.solution}</p>
+                    </div>
+                ))}
+            </div>
+        </section>
+
         {/* FAQs */}
-        <section>
+        <section id="faqs">
             <h3 className="text-[16px] font-black text-zinc-950 tracking-tight mb-6 flex items-center gap-2">
                 Frequently Asked Questions
             </h3>
@@ -73,7 +118,7 @@ export default function HelpCenterView() {
         </section>
 
         {/* Community Guidelines */}
-        <section>
+        <section id="guidelines">
             <h3 className="text-[16px] font-black text-zinc-950 tracking-tight mb-6 flex items-center gap-2">
                 Community Guidelines
             </h3>
@@ -108,16 +153,19 @@ export default function HelpCenterView() {
         </section>
 
         {/* Contact Support */}
-        <section className="pt-4">
+        <section id="contact" className="pt-4">
             <div className="bg-zinc-950 text-white rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
                 <div>
                     <h3 className="text-xl font-black mb-2">Still need help?</h3>
-                    <p className="text-zinc-400 text-sm font-medium">Our admin team is here to assist you with any technical issues or concerns.</p>
+                    <p className="text-zinc-400 text-sm font-medium">Found a bug or need to report an issue? Send an email to the admin team directly.</p>
                 </div>
-                <button className="w-full md:w-auto bg-white text-zinc-950 px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors">
+                <a 
+                  href="mailto:rudrebirla@gmail.com?subject=CampusPulse Support Request"
+                  className="w-full md:w-auto bg-white text-zinc-950 px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors"
+                >
                     <Mail className="w-4 h-4" />
                     Contact Support
-                </button>
+                </a>
             </div>
         </section>
 
