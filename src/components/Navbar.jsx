@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { Menu, X, ArrowRight, GraduationCap, Activity } from 'lucide-react';
+import React, { useState, useContext } from 'react';
+import { Menu, X, ArrowRight, GraduationCap, Activity, Download } from 'lucide-react';
+import { AppContext } from '../context/AppContext';
 
 export default function Navbar({ onLoginClick }) {
   const [isOpen, setIsOpen] = useState(false);
+  const { deferredPrompt, installPWA } = useContext(AppContext);
 
   const navLinks = [
     { name: 'Home', href: '#' },
@@ -35,7 +37,16 @@ export default function Navbar({ onLoginClick }) {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-4">
+            {deferredPrompt && (
+              <button
+                onClick={installPWA}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-emerald-500 text-emerald-600 font-bold text-sm tracking-wide transition-all hover:bg-emerald-50"
+              >
+                <Download className="w-4 h-4" />
+                Install App
+              </button>
+            )}
             <button
               onClick={onLoginClick}
               className="relative px-6 py-2.5 rounded-full bg-zinc-950 text-white font-bold text-sm tracking-wide overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
@@ -75,6 +86,15 @@ export default function Navbar({ onLoginClick }) {
               {link.name}
             </a>
           ))}
+          {deferredPrompt && (
+            <button
+              onClick={() => { setIsOpen(false); installPWA(); }}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full border-2 border-emerald-500 text-emerald-600 font-bold text-sm hover:bg-emerald-50 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Install App
+            </button>
+          )}
           <button
             onClick={() => { setIsOpen(false); onLoginClick(); }}
             className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-zinc-950 text-white font-bold text-sm hover:bg-zinc-800 transition-colors shadow-lg"

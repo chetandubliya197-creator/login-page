@@ -15,7 +15,8 @@ import {
   Plus,
   Menu as MenuIcon,
   X,
-  Shield
+  Shield,
+  Download
 } from 'lucide-react';
 import { Activity, GraduationCap } from 'lucide-react'; // For the logo
 
@@ -30,7 +31,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ onLogout }) {
-  const { currentUser, activeTab, setActiveTab, notifications, markNotificationsAsRead, unreadPrivateCount } = useContext(AppContext);
+  const { currentUser, activeTab, setActiveTab, notifications, markNotificationsAsRead, unreadPrivateCount, deferredPrompt, installPWA } = useContext(AppContext);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -238,6 +239,18 @@ export default function Sidebar({ onLogout }) {
                     </span>
                     Help Center
                 </button>
+
+                {deferredPrompt && (
+                    <button 
+                        onClick={installPWA}
+                        className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-bold transition-all duration-200 w-full text-left group bg-emerald-50 text-emerald-600 hover:bg-emerald-100 mt-2 border border-emerald-100"
+                    >
+                        <span className="transition-transform duration-200 group-hover:scale-105">
+                            <Download className="w-5 h-5" />
+                        </span>
+                        Install App
+                    </button>
+                )}
             </nav>
 
             {currentUser && (
