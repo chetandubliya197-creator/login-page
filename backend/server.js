@@ -42,6 +42,11 @@ app.get('/', (req, res) => {
     res.send('CampusPulse API is running...');
 });
 
+// Keep-alive ping endpoint (used by UptimeRobot to prevent Render cold starts)
+app.get('/ping', (req, res) => {
+    res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
+
 // API Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));

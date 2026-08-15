@@ -5,7 +5,7 @@ import { Heart, MessageCircle, Share2, MoreHorizontal } from 'lucide-react';
 
 
 export default function DashboardView() {
-  const { currentUser, posts, createPost } = useContext(AppContext);
+  const { currentUser, posts, setPosts, createPost } = useContext(AppContext);
   const [newPostText, setNewPostText] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -30,9 +30,8 @@ export default function DashboardView() {
               headers: { Authorization: `Bearer ${currentUser.token}` }
           });
           if (res.ok) {
-              // We should ideally have deletePost in AppContext, but we can just reload the page or update state locally.
-              // For a quick fix, let's just reload to fetch posts again.
-              window.location.reload();
+              // Remove from state directly — no page reload needed
+              setPosts(prev => prev.filter(p => p.id !== postId));
           }
       } catch(e) {
           console.error(e);

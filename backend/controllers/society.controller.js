@@ -66,11 +66,15 @@ const getAnnouncements = async (req, res) => {
         
         const formatted = announcements.map(ann => {
             const timeDiff = Date.now() - new Date(ann.createdAt).getTime();
-            let dateStr = 'Today';
-            if (timeDiff > 86400000 * 2) {
-                dateStr = '2 days ago';
-            } else if (timeDiff > 86400000) {
+            let dateStr;
+            if (timeDiff < 3600000) {
+                dateStr = Math.max(1, Math.floor(timeDiff / 60000)) + ' min ago';
+            } else if (timeDiff < 86400000) {
+                dateStr = Math.floor(timeDiff / 3600000) + 'h ago';
+            } else if (timeDiff < 86400000 * 2) {
                 dateStr = 'Yesterday';
+            } else {
+                dateStr = Math.floor(timeDiff / 86400000) + ' days ago';
             }
 
             return {

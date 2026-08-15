@@ -396,9 +396,9 @@ export function AppProvider({ children }) {
 
     // Strict Guideline: Rate Limiting for Global Messages (Max 5 per minute)
     const now = Date.now();
-    const recentMessages = globalMessageHistory.filter(time => now - time < 60000); // 1 minute window
-    if (recentMessages.length >= 5) {
-      showToast("Rate limit exceeded. You can only send 5 messages per minute to prevent spam.", "error");
+    const recentMessages = globalMessageHistory.filter(time => now - time < 60000);
+    if (recentMessages.length >= 10) {
+      showToast("Thoda slow karo! 1 minute mein max 10 messages hi bhej sakte ho.", "error");
       return;
     }
     setGlobalMessageHistory([...recentMessages, now]);
