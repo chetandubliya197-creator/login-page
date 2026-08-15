@@ -32,9 +32,12 @@ export default defineConfig({
             type: 'image/png',
             purpose: 'any maskable'
           }
-        ]
+        ],
+        start_url: '/login-page/',
+        scope: '/login-page/',
+        id: '/login-page/'
       }
     })
   ],
-  base: './',
+  base: '/login-page/',
 })
