@@ -323,7 +323,7 @@ export function AppProvider({ children }) {
         return false;
       }
       
-      setCurrentUser(data);
+      setCurrentUser({ ...data, id: data._id });
       showToast(`Welcome ${data.name}! 🎉`, 'success');
       return true;
     } catch (error) {
@@ -375,7 +375,7 @@ export function AppProvider({ children }) {
         return false;
       }
       
-      setCurrentUser(data);
+      setCurrentUser({ ...data, id: data._id });
       showToast(`Welcome back, ${data.name}! 👋`, 'success');
       return true;
     } catch (error) {
@@ -538,7 +538,7 @@ export function AppProvider({ children }) {
       }
 
       const updatedUser = await response.json();
-      setCurrentUser(prev => ({ ...prev, ...updatedUser, token: prev.token, isOnboarded: true }));
+      setCurrentUser(prev => ({ ...prev, ...updatedUser, id: updatedUser._id, token: prev.token, isOnboarded: true }));
       showToast('Welcome to CampusPulse! 🎉', 'success');
     } catch (error) {
       console.error(error);

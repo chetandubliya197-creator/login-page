@@ -8,6 +8,7 @@ export default function GlobalChat() {
   const [attachment, setAttachment] = useState(null); 
   const [activeMenu, setActiveMenu] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   
   const API_BASE_URL = 'https://campuspulse-jnfo.onrender.com';
   
@@ -43,7 +44,8 @@ export default function GlobalChat() {
   }, [globalMessages.length]);
 
   const getSenderInfo = (senderId) => {
-    if (senderId === currentUser.id) {
+    const currentId = currentUser.id || currentUser._id;
+    if (senderId === currentId) {
       return {
         displayName: currentUser.name + ' (You)',
         avatar: currentUser.avatar,
@@ -312,7 +314,8 @@ export default function GlobalChat() {
                                   <img 
                                     src={msg.attachment.url} 
                                     alt="attachment" 
-                                    className="max-h-64 rounded-xl object-cover shadow-sm border border-black/5"
+                                    onClick={() => setSelectedImage(msg.attachment.url)}
+                                    className="max-h-64 rounded-xl object-cover shadow-sm border border-black/5 cursor-pointer hover:opacity-95 transition-opacity"
                                   />
                               ) : (
                                   <div className={`flex items-center gap-3 p-3 rounded-xl border ${isMe ? 'bg-emerald-700/50 border-emerald-500' : 'bg-zinc-50 border-zinc-200'}`}>
@@ -484,9 +487,30 @@ export default function GlobalChat() {
         </form>
 
         <p className="text-[10px] text-zinc-400 font-medium text-center hidden sm:block mt-1">
-          Your messages are visible to everyone. Connect with a student to see their real identity.
+          Press Enter to send, Shift + Enter for new line
         </p>
       </div>
+
+      {/* Fullscreen Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[150] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button 
+            className="absolute top-4 right-4 md:top-6 md:right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            onClick={() => setSelectedImage(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img 
+            src={selectedImage} 
+            alt="Fullscreen view" 
+            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl scale-100 transition-transform duration-200" 
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
