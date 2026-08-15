@@ -1,6 +1,7 @@
 const User = require('../models/User.model');
 const Otp = require('../models/Otp.model');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -236,15 +237,14 @@ const sendOtp = async (req, res) => {
             return res.status(500).json({ message: 'Email service configuration missing.' });
         }
 
-        const response = await fetch(scriptUrl, {
-            method: 'POST',
+        const response = await axios.post(scriptUrl, JSON.stringify({ email, otp }), {
             headers: {
-                'Content-Type': 'text/plain', // GAS requires text/plain or x-www-form-urlencoded to avoid CORS preflight sometimes, but text/plain is safest
+                'Content-Type': 'text/plain',
             },
-            body: JSON.stringify({ email, otp })
+            maxRedirects: 5
         });
 
-        const result = await response.json();
+        const result = response.data;
 
         if (result.success) {
             res.status(200).json({ message: 'OTP sent successfully' });
