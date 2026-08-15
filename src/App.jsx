@@ -26,11 +26,20 @@ function InnerApp() {
   const [isModalOpen, setIsModalOpen] = useState(isPWA);
 
   if (!currentUser) {
+    if (isPWA) {
+      return (
+        <div className="relative min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans">
+          <AuthModal isOpen={true} onClose={() => {}} isPWA={true} />
+          <Toast />
+        </div>
+      );
+    }
+
     return (
       <div className="relative min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans">
         <Navbar onLoginClick={() => setIsModalOpen(true)} />
         <HeroSection onStartClick={() => setIsModalOpen(true)} />
-        <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} isPWA={isPWA} />
+        <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} isPWA={false} />
         <Toast />
         <footer className="w-full py-8 text-center text-xs text-zinc-500 border-t border-zinc-200 relative z-10 glassmorphism bg-white/50">
           <p>&copy; {new Date().getFullYear()} CampusPulse. Made with ❤️ for college students.</p>

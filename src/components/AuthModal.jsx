@@ -118,7 +118,7 @@ export default function AuthModal({ isOpen, onClose, isPWA }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm animate-fade-in transition-opacity duration-300">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isPWA ? 'bg-zinc-50' : 'bg-zinc-900/40 backdrop-blur-sm'} animate-fade-in transition-opacity duration-300`}>
 
       <div className="absolute inset-0" onClick={!isPWA ? onClose : undefined}></div>
 
