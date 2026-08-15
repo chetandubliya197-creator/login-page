@@ -9,6 +9,16 @@ export function AppProvider({ children }) {
   const [students, setStudents] = useState([]);
   const [societies, setSocieties] = useState([]);
   const [globalMessages, setGlobalMessages] = useState([]);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
   const [privateMessages, setPrivateMessages] = useState([]);
   const [posts, setPosts] = useState([]);
   
@@ -710,7 +720,9 @@ export function AppProvider({ children }) {
         toggleSuspendUserAdmin,
         fetchPosts,
         createAnnouncement,
-        createSociety
+        createSociety,
+        deferredPrompt,
+        installPWA
       }}
     >
       {children}
