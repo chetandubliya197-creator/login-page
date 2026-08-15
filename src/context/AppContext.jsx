@@ -1,4 +1,5 @@
-import React, { createContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export const AppContext = createContext();
@@ -199,9 +200,12 @@ export function AppProvider({ children }) {
   const [currentUser, setCurrentUser] = useLocalStorage('cp_user', null);
   const [students, setStudents] = useState([]);
   const [societies, setSocieties] = useLocalStorage('cp_societies', INITIAL_SOCIETIES);
-  const [globalMessages, setGlobalMessages] = useLocalStorage('cp_global_msgs', INITIAL_MESSAGES);
+  const [globalMessages, setGlobalMessages] = useState([]);
   const [privateMessages, setPrivateMessages] = useLocalStorage('cp_private_msgs', INITIAL_PRIVATE_MESSAGES);
   
+  const socketRef = useRef(null);
+  const [onlineUsersCount, setOnlineUsersCount] = useState(0);
+
   // Anti-Misuse State (Rate Limiting)
   const [globalMessageHistory, setGlobalMessageHistory] = useLocalStorage('cp_global_msg_hist', []);
   const [connectionHistory, setConnectionHistory] = useLocalStorage('cp_conn_hist', []);
@@ -246,12 +250,67 @@ export function AppProvider({ children }) {
     }
   }, [currentUser?.token]);
 
+  const fetchGlobalMessages = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/chat/global`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) setGlobalMessages(await res.json());
+    } catch (e) {
+      console.error('Error fetching chat', e);
+    }
+  }, [currentUser?.token]);
+
   useEffect(() => {
     if (currentUser?.token) {
       fetchStudents();
       fetchNotifications();
+      fetchGlobalMessages();
+
+      socketRef.current = io(API_BASE_URL, {
+        auth: { token: currentUser.token },
+        transports: ['websocket', 'polling']
+      });
+
+      socketRef.current.on('receive_global_message', (msg) => {
+        setGlobalMessages(prev => [...prev, msg]);
+      });
+
+      socketRef.current.on('update_global_message', (data) => {
+        setGlobalMessages(prev => prev.map(msg => 
+          msg.id === data.messageId 
+            ? { ...msg, text: data.newText, isEdited: data.isEdited }
+            : msg
+        ));
+      });
+
+      socketRef.current.on('message_deleted', (messageId) => {
+        setGlobalMessages(prev => prev.filter(msg => msg.id !== messageId));
+      });
+
+      socketRef.current.on('update_reactions', (data) => {
+        setGlobalMessages(prev => prev.map(msg => 
+          msg.id === data.messageId 
+            ? { ...msg, reactions: data.reactions }
+            : msg
+        ));
+      });
+
+      socketRef.current.on('online_users_update', (count) => {
+        setOnlineUsersCount(count);
+      });
+
+      socketRef.current.on('user_status_change', (data) => {
+        setStudents(prev => prev.map(std => 
+          std.id === data.userId ? { ...std, isOnline: data.isOnline } : std
+        ));
+      });
+
+      return () => {
+        if (socketRef.current) socketRef.current.disconnect();
+      };
     }
-  }, [currentUser?.token, fetchStudents, fetchNotifications]);
+  }, [currentUser?.token, fetchStudents, fetchNotifications, fetchGlobalMessages]);
 
   const requestOtp = async (email, type = 'register') => {
     try {
@@ -372,7 +431,7 @@ export function AppProvider({ children }) {
   };
 
   const sendGlobalMessage = (text, attachment = null, replyToId = null) => {
-    if ((!text.trim() && !attachment) || !currentUser) return;
+    if ((!text.trim() && !attachment) || !currentUser || !socketRef.current) return;
 
     // Strict Guideline: Rate Limiting for Global Messages (Max 5 per minute)
     const now = Date.now();
@@ -383,45 +442,22 @@ export function AppProvider({ children }) {
     }
     setGlobalMessageHistory([...recentMessages, now]);
 
-    const newMsg = {
-      id: `msg_${Date.now()}`,
-      senderId: currentUser.id,
-      text: text.trim(),
-      attachment,
-      replyToId,
-      isEdited: false,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      reactions: [],
-    };
-    setGlobalMessages(prev => [...prev, newMsg]);
+    socketRef.current.emit('send_global_message', { text: text.trim(), attachment, replyToId });
   };
 
   const editGlobalMessage = (id, newText) => {
-    setGlobalMessages(prev => prev.map(msg => 
-      msg.id === id && msg.senderId === currentUser.id 
-        ? { ...msg, text: newText.trim(), isEdited: true }
-        : msg
-    ));
-    showToast('Message updated', 'success');
+    if (!socketRef.current) return;
+    socketRef.current.emit('edit_global_message', { messageId: id, newText: newText.trim() });
   };
 
   const deleteGlobalMessage = (id) => {
-    setGlobalMessages(prev => prev.filter(msg => msg.id !== id || msg.senderId !== currentUser.id));
-    showToast('Message deleted', 'success');
+    if (!socketRef.current) return;
+    socketRef.current.emit('delete_global_message', id);
   };
 
   const addReactionToMessage = (messageId, emoji) => {
-    setGlobalMessages(prev =>
-      prev.map(msg => {
-        if (msg.id !== messageId) return msg;
-        const existing = msg.reactions || [];
-        const alreadyReacted = existing.find(r => r.emoji === emoji && r.userId === currentUser.id);
-        if (alreadyReacted) {
-          return { ...msg, reactions: existing.filter(r => !(r.emoji === emoji && r.userId === currentUser.id)) };
-        }
-        return { ...msg, reactions: [...existing, { emoji, userId: currentUser.id }] };
-      })
-    );
+    if (!socketRef.current) return;
+    socketRef.current.emit('react_global_message', { messageId, emoji });
   };
 
   const sendConnectRequest = async (id) => {
@@ -622,6 +658,7 @@ export function AppProvider({ children }) {
         setActiveTab,
         students,
         globalMessages,
+        onlineUsersCount,
         societies,
         societyAnnouncements,
         notifications,

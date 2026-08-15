@@ -3,7 +3,7 @@ import { AppContext } from '../context/AppContext';
 import { Paperclip, X, Image as ImageIcon, FileText, Send, Smile, MoreVertical, Flag, Ban, Reply, Edit2, Trash2, ChevronDown, Check } from 'lucide-react';
 
 export default function GlobalChat() {
-  const { currentUser, students, globalMessages, sendGlobalMessage, editGlobalMessage, deleteGlobalMessage, addReactionToMessage, reportUser, blockUser } = useContext(AppContext);
+  const { currentUser, students, globalMessages, onlineUsersCount, sendGlobalMessage, editGlobalMessage, deleteGlobalMessage, addReactionToMessage, reportUser, blockUser } = useContext(AppContext);
   const [inputText, setInputText] = useState('');
   const [attachment, setAttachment] = useState(null); 
   const [activeMenu, setActiveMenu] = useState(null);
@@ -133,7 +133,7 @@ export default function GlobalChat() {
         <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
         <div>
           <h2 className="font-black text-zinc-950 text-xl tracking-tight">Global Campus Chat</h2>
-          <p className="text-xs text-zinc-500 font-medium">#international-hub · (4,128 members)</p>
+          <p className="text-xs text-zinc-500 font-medium">#international-hub · ({onlineUsersCount} online)</p>
         </div>
 
         <div className="ml-auto hidden sm:flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5 shadow-sm">
