@@ -55,6 +55,7 @@ app.use('/api/private-chat', require('./routes/privateChat.routes'));
 app.use('/api/societies', require('./routes/society.routes'));
 app.use('/api/posts', require('./routes/post.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/upload', require('./routes/upload.routes'));
 
 // Keep track of connected users { userId: socketId }
 const onlineUsers = new Map();

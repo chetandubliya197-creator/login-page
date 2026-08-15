@@ -7,6 +7,9 @@ export default function GlobalChat() {
   const [inputText, setInputText] = useState('');
   const [attachment, setAttachment] = useState(null); 
   const [activeMenu, setActiveMenu] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const API_BASE_URL = 'https://campuspulse-jnfo.onrender.com';
   
   const [replyingTo, setReplyingTo] = useState(null);
   const [editingMsg, setEditingMsg] = useState(null);
@@ -65,20 +68,39 @@ export default function GlobalChat() {
     };
   };
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      e.target.value = '';
 
       const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+          setAttachment({ type: 'file', name: file.name, url: null });
+          return;
+      }
 
-      const mockAttachment = {
-          type: isImage ? 'image' : 'file',
-          name: file.name,
-          url: isImage ? URL.createObjectURL(file) : null
-      };
-
-      setAttachment(mockAttachment);
-      e.target.value = ''; 
+      // Upload to Cloudinary via backend
+      setIsUploading(true);
+      try {
+          const formData = new FormData();
+          formData.append('image', file);
+          const res = await fetch(`${API_BASE_URL}/api/upload`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${currentUser.token}` },
+              body: formData
+          });
+          if (res.ok) {
+              const data = await res.json();
+              setAttachment({ type: 'image', name: file.name, url: data.url });
+          } else {
+              alert('Image upload failed. Try again.');
+          }
+      } catch (err) {
+          console.error('Upload error:', err);
+          alert('Network error while uploading.');
+      } finally {
+          setIsUploading(false);
+      }
   };
 
   const handleSend = (e) => {
@@ -454,10 +476,10 @@ export default function GlobalChat() {
 
           <button
             type="submit"
-            disabled={!inputText.trim() && !attachment}
+            disabled={(!inputText.trim() && !attachment) || isUploading}
             className="p-3 rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 flex-shrink-0 shadow-md hover:shadow-lg text-white self-end mb-1"
           >
-            {editingMsg ? <Check className="w-5 h-5" /> : <Send className="w-5 h-5 -ml-0.5" />}
+            {isUploading ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin block" /> : editingMsg ? <Check className="w-5 h-5" /> : <Send className="w-5 h-5 -ml-0.5" />}
           </button>
         </form>
 
