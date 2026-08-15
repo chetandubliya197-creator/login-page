@@ -253,7 +253,7 @@ export function AppProvider({ children }) {
     }
   }, [currentUser?.token, fetchStudents, fetchNotifications]);
 
-  const requestOtp = async (email) => {
+  const requestOtp = async (email, type = 'register') => {
     try {
       const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
       if (!emailRegex.test(email)) {
@@ -264,7 +264,7 @@ export function AppProvider({ children }) {
       const response = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, type }),
       });
 
       const data = await response.json();
@@ -305,6 +305,29 @@ export function AppProvider({ children }) {
       
       setCurrentUser(data);
       showToast(`Welcome ${data.name}! 🎉`, 'success');
+      return true;
+    } catch (error) {
+      console.error(error);
+      showToast('Network error. Is the backend running?', 'error');
+      return false;
+    }
+  };
+
+  const handleResetPassword = async (email, otp, newPassword) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, newPassword }),
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        showToast(data.message || 'Password reset failed', 'error');
+        return false;
+      }
+      
+      showToast('Password reset successfully! Please sign in.', 'success');
       return true;
     } catch (error) {
       console.error(error);
@@ -609,6 +632,7 @@ export function AppProvider({ children }) {
         handleLogin,
         requestOtp,
         handleRegister,
+        handleResetPassword,
         handleLogout,
         sendGlobalMessage,
         editGlobalMessage,

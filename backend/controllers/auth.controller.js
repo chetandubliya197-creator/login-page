@@ -1,5 +1,6 @@
 const User = require('../models/User.model');
 const Otp = require('../models/Otp.model');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
@@ -205,16 +206,20 @@ const completeOnboarding = async (req, res) => {
 // @access  Public
 const sendOtp = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, type = 'register' } = req.body;
 
         if (!email) {
             return res.status(400).json({ message: 'Email is required' });
         }
 
-        // Check if user already exists
         const userExists = await User.findOne({ email });
-        if (userExists) {
+
+        if (type === 'register' && userExists) {
             return res.status(400).json({ message: 'User already exists with this email' });
+        }
+
+        if (type === 'reset' && !userExists) {
+            return res.status(404).json({ message: 'No account found with this email' });
         }
 
         // Generate 6 digit OTP
@@ -259,11 +264,54 @@ const sendOtp = async (req, res) => {
     }
 };
 
+// @desc    Reset Password
+// @route   POST /api/auth/reset-password
+// @access  Public
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ message: 'Please provide email, OTP, and new password' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+
+        const otpRecord = await Otp.findOne({ email });
+        if (!otpRecord) {
+            return res.status(400).json({ message: 'OTP expired or not found. Please request a new one.' });
+        }
+        if (otpRecord.otp !== otp) {
+            return res.status(400).json({ message: 'Invalid OTP' });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Hash new password manually since pre('save') only handles if isModified, but we can just set it and save
+        user.password = newPassword;
+        await user.save(); // The pre('save') hook will hash it!
+
+        // Delete OTP
+        await Otp.deleteOne({ email });
+
+        res.status(200).json({ message: 'Password reset successful' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error resetting password' });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     logoutUser,
     getUserProfile,
     completeOnboarding,
-    sendOtp
+    sendOtp,
+    resetPassword
 };

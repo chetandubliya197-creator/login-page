@@ -6,11 +6,13 @@ const {
     logoutUser, 
     getUserProfile, 
     completeOnboarding,
-    sendOtp 
+    sendOtp,
+    resetPassword 
 } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 
 router.post('/send-otp', sendOtp);
+router.post('/reset-password', resetPassword);
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);

@@ -4,9 +4,10 @@ import { X, Mail, Lock, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose }) {
 
-  const { handleLogin, handleRegister, showToast, requestOtp } = useContext(AppContext);
+  const { handleLogin, handleRegister, handleResetPassword, showToast, requestOtp } = useContext(AppContext);
 
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [loginEmail, setLoginEmail] = useState('');
@@ -49,9 +50,46 @@ export default function AuthModal({ isOpen, onClose }) {
 
   const handleModeChange = (loginState) => {
     setIsLogin(loginState);
+    setIsForgotPassword(false);
     setIsOtpSent(false);
     setOtpCode('');
     setOtpCountdown(0);
+  };
+
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    if (!isOtpSent) {
+      const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
+      if (!emailRegex.test(loginEmail)) {
+        showToast("Please use your @indoreinstitute.com email.", 'error');
+        return;
+      }
+      const success = await requestOtp(loginEmail, 'reset');
+      if (success) {
+        setIsOtpSent(true);
+        setOtpCountdown(30);
+        showToast(`OTP sent to ${loginEmail}!`, 'info');
+      }
+      return;
+    }
+
+    if (!otpCode) {
+      showToast("Please enter the OTP.", 'error');
+      return;
+    }
+    
+    if (loginPassword.length < 6) {
+      showToast("Password must be at least 6 characters.", 'error');
+      return;
+    }
+
+    const success = await handleResetPassword(loginEmail, otpCode, loginPassword);
+    if (success) {
+      setIsForgotPassword(false);
+      setIsOtpSent(false);
+      setOtpCode('');
+      setLoginPassword('');
+    }
   };
 
   const handleLoginSubmit = async (e) => {
@@ -147,9 +185,9 @@ export default function AuthModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* Login Form */}
+        {/* Login / Reset Form */}
         <div className={`absolute md:relative inset-0 md:inset-auto w-full md:w-1/2 h-full flex flex-col justify-center px-6 sm:px-14 py-12 md:pt-32 md:pb-2 z-10 bg-white overflow-y-auto transition-all duration-700 ease-in-out ${isLogin ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 -z-10 pointer-events-none'}`}>
-          <form onSubmit={handleLoginSubmit} className="space-y-6">
+          <form onSubmit={isForgotPassword ? handleResetSubmit : handleLoginSubmit} className="space-y-6">
 
             <div 
               className={`transition-all duration-700 ease-out ${
@@ -157,8 +195,12 @@ export default function AuthModal({ isOpen, onClose }) {
               }`}
               style={{ transitionDelay: isLogin ? '100ms' : '0ms' }}
             >
-              <h2 className="text-3xl font-black text-zinc-950 tracking-tight mb-2">Sign In</h2>
-              <p className="text-zinc-500 text-sm font-medium">Access your campus network</p>
+              <h2 className="text-3xl font-black text-zinc-950 tracking-tight mb-2">
+                {isForgotPassword ? "Reset Password" : "Sign In"}
+              </h2>
+              <p className="text-zinc-500 text-sm font-medium">
+                {isForgotPassword ? "Enter email to receive OTP" : "Access your campus network"}
+              </p>
             </div>
 
             <div 
@@ -186,36 +228,66 @@ export default function AuthModal({ isOpen, onClose }) {
               <Mail className="absolute right-0 top-3 w-5 h-5 text-zinc-400 peer-focus:text-emerald-600 transition-colors" />
             </div>
 
-            <div 
-              className={`relative z-0 w-full group transition-all duration-700 ease-out ${
-                isLogin ? 'translate-x-0 opacity-100 blur-0' : '-translate-x-[120%] opacity-0 blur-md pointer-events-none'
-              }`}
-              style={{ transitionDelay: isLogin ? '300ms' : '0ms' }}
-            >
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                id="login_password"
-                className="block py-3 px-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
-                placeholder=" "
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                required
-              />
-              <label
-                htmlFor="login_password"
-                className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
+            {isForgotPassword && (
+              <div 
+                className={`relative z-0 w-full group transition-all duration-500 ease-out ${
+                  isOtpSent
+                    ? 'max-h-20 opacity-100 translate-y-0 mt-4'
+                    : 'max-h-0 opacity-0 -translate-y-4 overflow-hidden pointer-events-none'
+                }`}
               >
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-0 top-3 text-zinc-400 hover:text-zinc-600 focus:outline-none"
+                <input
+                  type="text"
+                  name="reset_otp"
+                  id="reset_otp"
+                  className="block py-3 px-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
+                  placeholder=" "
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  required={isForgotPassword && isOtpSent}
+                />
+                <label
+                  htmlFor="reset_otp"
+                  className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
+                >
+                  Enter OTP
+                </label>
+                <ShieldCheck className="absolute right-0 top-3 w-5 h-5 text-zinc-400 peer-focus:text-emerald-600 transition-colors" />
+              </div>
+            )}
+
+            {(isForgotPassword && !isOtpSent) ? null : (
+              <div 
+                className={`relative z-0 w-full group transition-all duration-700 ease-out ${
+                  isLogin ? 'translate-x-0 opacity-100 blur-0' : '-translate-x-[120%] opacity-0 blur-md pointer-events-none'
+                }`}
+                style={{ transitionDelay: isLogin ? '300ms' : '0ms' }}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  id="login_password"
+                  className="block py-3 px-0 w-full text-base text-zinc-900 bg-transparent border-0 border-b-2 border-zinc-200 appearance-none focus:outline-none focus:ring-0 focus:border-emerald-600 peer placeholder-transparent transition-colors"
+                  placeholder=" "
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required={!isForgotPassword || isOtpSent}
+                />
+                <label
+                  htmlFor="login_password"
+                  className="absolute left-0 top-3 text-zinc-500 text-sm duration-300 transform -translate-y-6 scale-75 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-emerald-600 font-medium"
+                >
+                  {isForgotPassword ? "New Password" : "Password"}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-3 text-zinc-400 hover:text-zinc-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            )}
 
             <div 
               className={`flex items-center justify-between transition-all duration-700 ease-out ${
@@ -230,8 +302,26 @@ export default function AuthModal({ isOpen, onClose }) {
                 />
                 <span className="text-sm text-zinc-500 font-medium hover:text-zinc-700 transition-colors">Remember me</span>
               </label>
-              <a href="#" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors font-bold">Forgot Password?</a>
+              {!isForgotPassword && (
+                <button 
+                  type="button" 
+                  onClick={() => setIsForgotPassword(true)} 
+                  className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors font-bold"
+                >
+                  Forgot Password?
+                </button>
+              )}
             </div>
+
+            {isForgotPassword && (
+              <button 
+                type="button" 
+                onClick={() => setIsForgotPassword(false)} 
+                className="w-full text-center text-sm font-bold text-zinc-500 hover:text-zinc-800 transition-colors block"
+              >
+                ← Back to Sign In
+              </button>
+            )}
 
             <button
               type="submit"
@@ -240,7 +330,7 @@ export default function AuthModal({ isOpen, onClose }) {
               }`}
               style={{ transitionDelay: isLogin ? '500ms' : '0ms' }}
             >
-              Sign In
+              {isForgotPassword ? (isOtpSent ? "Reset Password" : "Send OTP") : "Sign In"}
             </button>
 
             {/* Mobile Toggle */}
