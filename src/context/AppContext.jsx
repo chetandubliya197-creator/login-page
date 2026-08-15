@@ -708,6 +708,8 @@ export function AppProvider({ children }) {
         reportUser,
         blockUser,
         fetchAdminUsers,
+        toggleSuspendUserAdmin,
+        fetchPosts,
         createAnnouncement,
         createSociety
       }}
