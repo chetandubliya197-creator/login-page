@@ -433,6 +433,7 @@ export function AppProvider({ children }) {
     if (backup) {
       setCurrentUser(JSON.parse(backup));
       localStorage.removeItem('cp_admin_backup');
+      setActiveTab('admin');
       showToast('Sandbox mode exited. Restored admin session.', 'success');
     } else {
       handleLogout();
