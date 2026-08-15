@@ -1,17 +1,6 @@
 const User = require('../models/User.model');
 const Otp = require('../models/Otp.model');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-
-// Nodemailer transporter setup
-// User needs to provide EMAIL_USER and EMAIL_PASS in .env
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/"/g, '') : '',
-        pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/"/g, '') : ''
-    }
-});
 
 // Generate JWT
 const generateToken = (id) => {
@@ -239,25 +228,30 @@ const sendOtp = async (req, res) => {
             otp
         });
 
-        // Send Email
-        const mailOptions = {
-            from: process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/"/g, '') : '',
-            to: email,
-            subject: 'CampusPulse - Your Verification Code',
-            html: `
-                <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
-                    <h2>Welcome to CampusPulse!</h2>
-                    <p>Your verification code is:</p>
-                    <h1 style="color: #4CAF50; font-size: 40px; letter-spacing: 5px;">${otp}</h1>
-                    <p>This code will expire in 5 minutes.</p>
-                    <p>If you didn't request this, please ignore this email.</p>
-                </div>
-            `
-        };
+        // Send Email via Google Apps Script Web App
+        const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+        
+        if (!scriptUrl) {
+            console.error('GOOGLE_SCRIPT_URL is missing in environment variables');
+            return res.status(500).json({ message: 'Email service configuration missing.' });
+        }
 
-        await transporter.sendMail(mailOptions);
+        const response = await fetch(scriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain', // GAS requires text/plain or x-www-form-urlencoded to avoid CORS preflight sometimes, but text/plain is safest
+            },
+            body: JSON.stringify({ email, otp })
+        });
 
-        res.status(200).json({ message: 'OTP sent successfully' });
+        const result = await response.json();
+
+        if (result.success) {
+            res.status(200).json({ message: 'OTP sent successfully' });
+        } else {
+            console.error('GAS Error:', result.error);
+            res.status(500).json({ message: 'Failed to send OTP. Google Script error.', error: result.error });
+        }
 
     } catch (error) {
         console.error('Error sending OTP:', error);
