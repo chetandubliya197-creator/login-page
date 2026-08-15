@@ -22,6 +22,10 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Please provide all fields including OTP' });
         }
 
+        if (!email.toLowerCase().endsWith('indoreinstitute.com')) {
+            return res.status(403).json({ message: 'Only @indoreinstitute.com email addresses are allowed to register.' });
+        }
+
         // Verify OTP
         const otpRecord = await Otp.findOne({ email });
         if (!otpRecord) {
@@ -214,6 +218,11 @@ const sendOtp = async (req, res) => {
 
         if (!email) {
             return res.status(400).json({ message: 'Email is required' });
+        }
+
+        // Restrict to college domain for new registrations
+        if (type === 'register' && !email.toLowerCase().endsWith('indoreinstitute.com')) {
+            return res.status(403).json({ message: 'Only @indoreinstitute.com email addresses are allowed to register.' });
         }
 
         const userExists = await User.findOne({ email });
