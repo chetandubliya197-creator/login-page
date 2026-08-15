@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   { id: 'settings', label: 'Settings', icon: <SettingsIcon className="w-5 h-5" /> },
 ];
 
-export default function Sidebar({ onLogout, onNewPost }) {
+export default function Sidebar({ onLogout }) {
   const { currentUser, activeTab, setActiveTab, notifications, markNotificationsAsRead, unreadPrivateCount } = useContext(AppContext);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -180,14 +180,8 @@ export default function Sidebar({ onLogout, onNewPost }) {
             </div>
         )}
 
-        {/* Navigation Area */}
+            {/* Navigation Area */}
         <div className="flex-1 overflow-y-auto py-4 px-4 flex flex-col gap-2">
-            
-            {/* New Post Button */}
-            <button onClick={() => { onNewPost(); setIsMobileMenuOpen(false); }} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-sm shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 mb-4">
-                <Plus className="w-5 h-5" />
-                New Post
-            </button>
 
             <nav className="flex flex-col gap-1">
                 {NAV_ITEMS.map((item) => (

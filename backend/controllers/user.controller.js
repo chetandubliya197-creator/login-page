@@ -190,10 +190,71 @@ const getNotifications = async (req, res) => {
     }
 };
 
+// @desc    Block a user
+// @route   POST /api/users/:id/block
+// @access  Private
+const blockUser = async (req, res) => {
+    try {
+        const userIdToBlock = req.params.id;
+        if (req.user._id.toString() === userIdToBlock) {
+            return res.status(400).json({ message: 'Cannot block yourself' });
+        }
+
+        const user = await User.findById(req.user._id);
+        if (!user.blockedUsers.includes(userIdToBlock)) {
+            user.blockedUsers.push(userIdToBlock);
+            await user.save();
+        }
+
+        res.json({ message: 'User blocked successfully', blockedUsers: user.blockedUsers });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error blocking user' });
+    }
+};
+
+// @desc    Report a user
+// @route   POST /api/users/:id/report
+// @access  Private
+const reportUser = async (req, res) => {
+    try {
+        const userIdToReport = req.params.id;
+        if (req.user._id.toString() === userIdToReport) {
+            return res.status(400).json({ message: 'Cannot report yourself' });
+        }
+
+        const reportedUser = await User.findById(userIdToReport);
+        if (!reportedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Increment report count
+        reportedUser.reportCount = (reportedUser.reportCount || 0) + 1;
+        
+        // Auto-suspend if 5 or more reports
+        if (reportedUser.reportCount >= 5) {
+            reportedUser.isSuspended = true;
+        }
+
+        await reportedUser.save();
+
+        res.json({ 
+            message: 'User reported successfully',
+            reportCount: reportedUser.reportCount,
+            isSuspended: reportedUser.isSuspended
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error reporting user' });
+    }
+};
+
 module.exports = {
     getAllUsers,
     sendConnectionRequest,
     acceptConnectionRequest,
     rejectConnectionRequest,
-    getNotifications
+    getNotifications,
+    blockUser,
+    reportUser
 };

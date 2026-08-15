@@ -5,25 +5,73 @@ import { Search, ChevronLeft, Calendar, Share2, MapPin, Users } from 'lucide-rea
 const TABS = ['All Societies', 'Academic', 'Arts & Culture', 'Sports', 'Technology'];
 
 export default function SocietyHub() {
-  const { societies, toggleSocietyJoin } = useContext(AppContext);
+  const { currentUser, societies, toggleSocietyJoin, createAnnouncement } = useContext(AppContext);
   
   const [activeTab, setActiveTab] = useState('All Societies');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSociety, setSelectedSociety] = useState(null);
   const [detailTab, setDetailTab] = useState('About');
 
-  // Filter logic based on mockup categories (using mock logic since we don't have categories in initial data)
+  // Announcement state
+  const [annTitle, setAnnTitle] = useState('');
+  const [annText, setAnnText] = useState('');
+  const [isSubmittingAnn, setIsSubmittingAnn] = useState(false);
+
+  // Create Society state
+  const [showCreateSociety, setShowCreateSociety] = useState(false);
+  const [newSocName, setNewSocName] = useState('');
+  const [newSocDesc, setNewSocDesc] = useState('');
+  const [newSocIcon, setNewSocIcon] = useState('🎓');
+  const [isSubmittingSoc, setIsSubmittingSoc] = useState(false);
+
+  const handleCreateAnnouncement = async (e) => {
+      e.preventDefault();
+      if (!annTitle.trim() || !annText.trim() || isSubmittingAnn) return;
+      setIsSubmittingAnn(true);
+      const success = await createAnnouncement(selectedSociety.id, annTitle, annText);
+      if (success) {
+          setAnnTitle('');
+          setAnnText('');
+      }
+      setIsSubmittingAnn(false);
+  };
+
+  const handleCreateSociety = async (e) => {
+      e.preventDefault();
+      if (!newSocName.trim() || !newSocDesc.trim() || !newSocIcon.trim() || isSubmittingSoc) return;
+      setIsSubmittingSoc(true);
+      const success = await createSociety(newSocName, newSocDesc, newSocIcon);
+      if (success) {
+          setNewSocName('');
+          setNewSocDesc('');
+          setNewSocIcon('🎓');
+          setShowCreateSociety(false);
+      }
+      setIsSubmittingSoc(false);
+  };
+
+  // Filter logic based on mockup categories
   const filteredSocieties = societies.filter(s => {
       const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
       
       if (activeTab === 'All Societies') return true;
-      if (activeTab === 'Technology' && s.name.includes('Code') || s.name.includes('Tech') || s.name.includes('Robotics') || s.name.includes('AI') || s.name.includes('Cyber')) return true;
-      if (activeTab === 'Arts & Culture' && s.name.includes('Culture') || s.name.includes('Photo') || s.name.includes('Art')) return true;
-      if (activeTab === 'Sports' && s.name.includes('Sport')) return true;
-      if (activeTab === 'Academic' && s.name.includes('Academic') || s.name.includes('Science')) return true;
       
-      return false; // Very naive filter just for mockup purposes
+      const name = s.name.toLowerCase();
+      if (activeTab === 'Technology') {
+          return name.includes('code') || name.includes('tech') || name.includes('robotic') || name.includes('ai') || name.includes('cyber');
+      }
+      if (activeTab === 'Arts & Culture') {
+          return name.includes('culture') || name.includes('photo') || name.includes('art') || name.includes('dance') || name.includes('sing') || name.includes('music') || name.includes('drama');
+      }
+      if (activeTab === 'Sports') {
+          return name.includes('sport') || name.includes('esport') || name.includes('e-sport');
+      }
+      if (activeTab === 'Academic') {
+          return name.includes('academic') || name.includes('science') || name.includes('debate') || name.includes('mun');
+      }
+      
+      return false;
   });
 
   if (selectedSociety) {
@@ -119,6 +167,34 @@ export default function SocietyHub() {
                               </div>
                           </div>
                       </div>
+
+                      {currentUser?.role === 'admin' && (
+                          <div className="bg-white rounded-3xl p-6 border border-emerald-200 shadow-sm bg-emerald-50/30">
+                              <h3 className="font-black text-lg text-emerald-900 mb-4">Post Announcement</h3>
+                              <form onSubmit={handleCreateAnnouncement} className="space-y-3">
+                                  <input 
+                                      type="text" 
+                                      placeholder="Announcement Title"
+                                      value={annTitle}
+                                      onChange={(e) => setAnnTitle(e.target.value)}
+                                      className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                                  />
+                                  <textarea 
+                                      placeholder="Announcement details..."
+                                      value={annText}
+                                      onChange={(e) => setAnnText(e.target.value)}
+                                      className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all resize-none min-h-[80px]"
+                                  />
+                                  <button 
+                                      type="submit" 
+                                      disabled={isSubmittingAnn || !annTitle.trim() || !annText.trim()}
+                                      className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-bold rounded-xl text-sm transition-all"
+                                  >
+                                      {isSubmittingAnn ? 'Posting...' : 'Post to Campus'}
+                                  </button>
+                              </form>
+                          </div>
+                      )}
                   </div>
 
                   <div className="md:col-span-2 space-y-6">
@@ -194,24 +270,74 @@ export default function SocietyHub() {
               </div>
           </div>
 
-          <div className="flex items-center gap-3 mt-8 overflow-x-auto pb-2 scrollbar-hide">
-              {TABS.map(tab => (
+          <div className="flex items-center justify-between gap-3 mt-8 pb-2">
+              <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
+                  {TABS.map(tab => (
+                      <button 
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold transition-all
+                            ${activeTab === tab 
+                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/50 shadow-sm' 
+                                : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-800'
+                            }`}
+                      >
+                          {tab}
+                      </button>
+                  ))}
+              </div>
+              {currentUser?.role === 'admin' && (
                   <button 
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold transition-all
-                        ${activeTab === tab 
-                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/50 shadow-sm' 
-                            : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-800'
-                        }`}
+                      onClick={() => setShowCreateSociety(!showCreateSociety)}
+                      className="whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm transition-all flex-shrink-0"
                   >
-                      {tab}
+                      {showCreateSociety ? 'Cancel' : '+ New Society'}
                   </button>
-              ))}
+              )}
           </div>
       </div>
 
-      <div className="flex-1 p-6 md:p-8">
+      <div className="flex-1 p-6 max-w-7xl mx-auto w-full">
+          
+          {showCreateSociety && currentUser?.role === 'admin' && (
+              <div className="bg-white rounded-3xl p-6 border border-emerald-200 shadow-sm bg-emerald-50/30 mb-6">
+                  <h3 className="font-black text-lg text-emerald-900 mb-4">Create New Society</h3>
+                  <form onSubmit={handleCreateSociety} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <input 
+                              type="text" 
+                              placeholder="Society Name (e.g. Coding Club)"
+                              value={newSocName}
+                              onChange={(e) => setNewSocName(e.target.value)}
+                              className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                          />
+                          <input 
+                              type="text" 
+                              placeholder="Icon Emoji (e.g. 💻)"
+                              value={newSocIcon}
+                              onChange={(e) => setNewSocIcon(e.target.value)}
+                              className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                          />
+                      </div>
+                      <textarea 
+                          placeholder="Society description..."
+                          value={newSocDesc}
+                          onChange={(e) => setNewSocDesc(e.target.value)}
+                          className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all resize-none min-h-[80px]"
+                      />
+                      <div className="flex justify-end">
+                          <button 
+                              type="submit" 
+                              disabled={isSubmittingSoc || !newSocName.trim() || !newSocDesc.trim()}
+                              className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-bold rounded-xl text-sm transition-all"
+                          >
+                              {isSubmittingSoc ? 'Creating...' : 'Create Society'}
+                          </button>
+                      </div>
+                  </form>
+              </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredSocieties.map((society) => (
               <div

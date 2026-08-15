@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const Message = require('./models/Message.model');
 const User = require('./models/User.model');
+const PrivateMessage = require('./models/PrivateMessage.model');
 
 // Connect to Database
 connectDB();
@@ -42,6 +43,9 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/chat', require('./routes/chat.routes'));
+app.use('/api/private-chat', require('./routes/privateChat.routes'));
+app.use('/api/societies', require('./routes/society.routes'));
+app.use('/api/posts', require('./routes/post.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 
 // Keep track of connected users { userId: socketId }
@@ -136,30 +140,127 @@ io.on('connection', async (socket) => {
         }
     });
 
-    socket.on('react_global_message', async (data) => {
+    socket.on('react_global_message', async ({ messageId, emoji }) => {
         try {
-            const { messageId, emoji } = data;
             const msg = await Message.findById(messageId);
             if (msg) {
-                const existingIndex = msg.reactions.findIndex(r => r.emoji === emoji && r.userId.toString() === socket.userId);
-                
-                if (existingIndex > -1) {
-                    msg.reactions.splice(existingIndex, 1);
+                const existingReaction = msg.reactions.find(r => r.userId.toString() === socket.userId);
+                if (existingReaction) {
+                    existingReaction.emoji = emoji;
                 } else {
                     msg.reactions.push({ emoji, userId: socket.userId });
                 }
-                
                 await msg.save();
-
-                const formattedReactions = msg.reactions.map(r => ({
-                    emoji: r.emoji,
-                    userId: r.userId.toString()
-                }));
-
-                io.to('global_chat').emit('update_reactions', { messageId, reactions: formattedReactions });
+                io.to('global_chat').emit('update_reactions', { messageId, reactions: msg.reactions });
             }
         } catch (error) {
-            console.error('Socket reaction error:', error);
+            console.error('Socket react error:', error);
+        }
+    });
+
+    // ==========================================
+    // PRIVATE MESSAGING SOCKET EVENTS
+    // ==========================================
+
+    socket.on('send_private_message', async (data) => {
+        try {
+            const { receiverId, text } = data;
+            
+            // Check if sender is blocked by receiver
+            const receiver = await User.findById(receiverId);
+            if (receiver && receiver.blockedUsers && receiver.blockedUsers.includes(socket.userId)) {
+                return; // Silently drop if blocked
+            }
+
+            const msg = await PrivateMessage.create({
+                senderId: socket.userId,
+                receiverId,
+                text
+            });
+
+            const formattedMsg = {
+                id: msg._id,
+                senderId: msg.senderId,
+                conversationId: msg.senderId, // from receiver's perspective
+                text: msg.text,
+                isEdited: msg.isEdited,
+                read: msg.read,
+                timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            // Send to receiver if online
+            const receiverSocketId = onlineUsers.get(receiverId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('receive_private_message', formattedMsg);
+            }
+
+            // Send back to sender
+            const senderFormattedMsg = { ...formattedMsg, conversationId: receiverId };
+            socket.emit('receive_private_message', senderFormattedMsg);
+
+        } catch (error) {
+            console.error('Socket private msg error:', error);
+        }
+    });
+
+    socket.on('edit_private_message', async (data) => {
+        try {
+            const { messageId, newText } = data;
+            const msg = await PrivateMessage.findOneAndUpdate(
+                { _id: messageId, senderId: socket.userId },
+                { text: newText, isEdited: true },
+                { new: true }
+            );
+
+            if (msg) {
+                const updatePayload = { messageId, newText, isEdited: true, senderId: msg.senderId, conversationId: msg.receiverId };
+                
+                // Notify sender
+                socket.emit('update_private_message', updatePayload);
+                
+                // Notify receiver
+                const receiverSocketId = onlineUsers.get(msg.receiverId.toString());
+                if (receiverSocketId) {
+                    io.to(receiverSocketId).emit('update_private_message', { ...updatePayload, conversationId: msg.senderId });
+                }
+            }
+        } catch (error) {
+            console.error('Socket edit private error:', error);
+        }
+    });
+
+    socket.on('delete_private_message', async (messageId) => {
+        try {
+            const msg = await PrivateMessage.findOneAndDelete({ _id: messageId, senderId: socket.userId });
+            if (msg) {
+                // Notify sender
+                socket.emit('private_message_deleted', messageId);
+                
+                // Notify receiver
+                const receiverSocketId = onlineUsers.get(msg.receiverId.toString());
+                if (receiverSocketId) {
+                    io.to(receiverSocketId).emit('private_message_deleted', messageId);
+                }
+            }
+        } catch (error) {
+            console.error('Socket delete private error:', error);
+        }
+    });
+
+    socket.on('mark_private_read', async (senderIdToMarkRead) => {
+        try {
+            await PrivateMessage.updateMany(
+                { senderId: senderIdToMarkRead, receiverId: socket.userId, read: false },
+                { $set: { read: true } }
+            );
+            
+            // Tell the user who sent the messages that they were read
+            const senderSocketId = onlineUsers.get(senderIdToMarkRead);
+            if (senderSocketId) {
+                io.to(senderSocketId).emit('private_messages_read', socket.userId);
+            }
+        } catch (error) {
+            console.error('Socket read private error:', error);
         }
     });
 

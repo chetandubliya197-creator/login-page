@@ -4,204 +4,13 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export const AppContext = createContext();
 
-const INITIAL_STUDENTS = [
-  {
-    id: 'std_002',
-    name: 'Rahul Verma',
-    email: 'rahul.verma@college.edu',
-    collegeId: 'COL2024098',
-    anonUsername: 'DeltaRunner_21',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul',
-    branch: 'Computer Science',
-    year: '3rd Year',
-    bio: 'Competitive coder. Love Node.js and systems architecture.',
-    connectionStatus: 'not_connected',
-    interests: ['Coding', 'Gaming', 'Algorithms'],
-    isOnline: true,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_003',
-    name: 'Priya Singh',
-    email: 'priya.singh@college.edu',
-    collegeId: 'COL2024105',
-    anonUsername: 'QuantumDev_99',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
-    branch: 'Electronics',
-    year: '3rd Year',
-    bio: 'IoT enthusiast & embedded systems developer.',
-    connectionStatus: 'connected',
-    interests: ['Arduino', 'Robotics', 'WebDev'],
-    isOnline: true,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_004',
-    name: 'Amit Patel',
-    email: 'amit.patel@college.edu',
-    collegeId: 'COL2025012',
-    anonUsername: 'NeonRider_17',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amit',
-    branch: 'Mechanical',
-    year: '2nd Year',
-    bio: 'CAD designer and motor sports lover.',
-    connectionStatus: 'pending',
-    interests: ['CAD', 'F1', 'Automobile'],
-    isOnline: false,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_005',
-    name: 'Sneha Sharma',
-    email: 'sneha.sharma@college.edu',
-    collegeId: 'COL2024045',
-    anonUsername: 'CyberSage_08',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sneha',
-    branch: 'Information Technology',
-    year: '3rd Year',
-    bio: 'Cybersecurity learner. Pentesting and Linux are life.',
-    connectionStatus: 'connected',
-    interests: ['Cybersecurity', 'Linux', 'Python'],
-    isOnline: true,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_006',
-    name: 'Arjun Mehta',
-    email: 'arjun.mehta@college.edu',
-    collegeId: 'COL2024210',
-    anonUsername: 'PhoenixByte_33',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun',
-    branch: 'Civil Engineering',
-    year: '4th Year',
-    bio: 'Structural design nerd. AutoCAD is my canvas.',
-    connectionStatus: 'not_connected',
-    interests: ['AutoCAD', 'Architecture', 'Photography'],
-    isOnline: false,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_007',
-    name: 'Riya Kapoor',
-    email: 'riya.kapoor@college.edu',
-    collegeId: 'COL2025033',
-    anonUsername: 'NovaStar_55',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Riya',
-    branch: 'Computer Science',
-    year: '2nd Year',
-    bio: 'ML enthusiast. Currently learning PyTorch and data viz.',
-    connectionStatus: 'not_connected',
-    interests: ['Machine Learning', 'Python', 'Data Science'],
-    isOnline: true,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_008',
-    name: 'Vikram Nair',
-    email: 'vikram.nair@college.edu',
-    collegeId: 'COL2024077',
-    anonUsername: 'StealthCoder_09',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram',
-    branch: 'Electronics',
-    year: '4th Year',
-    bio: 'Embedded systems and VLSI. Love building low-level stuff.',
-    connectionStatus: 'not_connected',
-    interests: ['VLSI', 'Arduino', 'PCB Design'],
-    isOnline: false,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_009',
-    name: 'Pooja Joshi',
-    email: 'pooja.joshi@college.edu',
-    collegeId: 'COL2025067',
-    anonUsername: 'PixelDreamer_11',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Pooja',
-    branch: 'Information Technology',
-    year: '2nd Year',
-    bio: 'UI/UX designer who codes. Figma is my second home.',
-    connectionStatus: 'not_connected',
-    interests: ['UI/UX', 'Figma', 'React'],
-    isOnline: true,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_010',
-    name: 'Karan Gupta',
-    email: 'karan.gupta@college.edu',
-    collegeId: 'COL2024189',
-    anonUsername: 'TurboHack_77',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karan',
-    branch: 'Computer Science',
-    year: '3rd Year',
-    bio: 'Open source contributor. Loves competitive programming.',
-    connectionStatus: 'not_connected',
-    interests: ['Open Source', 'C++', 'Competitive Programming'],
-    isOnline: true,
-    reportCount: 0,
-    isSuspended: false,
-  },
-  {
-    id: 'std_011',
-    name: 'Ananya Reddy',
-    email: 'ananya.reddy@college.edu',
-    collegeId: 'COL2025088',
-    anonUsername: 'CloudMind_22',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya',
-    branch: 'Mechanical',
-    year: '1st Year',
-    bio: 'Robotics club member. Drone enthusiast and maker.',
-    connectionStatus: 'not_connected',
-    interests: ['Drones', 'Robotics', 'CAD'],
-    isOnline: false,
-    reportCount: 0,
-    isSuspended: false,
-  },
-];
-
-const INITIAL_SOCIETIES = [
-  { id: 'soc_coding', name: 'Coding Society', description: 'Algorithms, Hackathons, Open Source', membersCount: 142, joined: true, icon: '💻' },
-  { id: 'soc_robotics', name: 'Robotics Club', description: 'Arduino, Drone design, Hardware fabrication', membersCount: 88, joined: false, icon: '🤖' },
-  { id: 'soc_cultural', name: 'Cultural Society', description: 'Music, Drama, Event organisation', membersCount: 110, joined: false, icon: '🎭' },
-  { id: 'soc_ml', name: 'AI & ML Club', description: 'Machine Learning, Data Science, Deep Learning', membersCount: 76, joined: false, icon: '🧠' },
-  { id: 'soc_cyber', name: 'CyberSec Club', description: 'Ethical Hacking, CTF, Network Security', membersCount: 54, joined: true, icon: '🔐' },
-  { id: 'soc_photo', name: 'Photography Club', description: 'Campus shoots, Editing, Reels & Shorts', membersCount: 63, joined: false, icon: '📸' },
-];
-
-const INITIAL_ANNOUNCEMENTS = [
-  { id: 'ann_1', societyId: 'soc_coding', title: 'Internal Hackathon Next Week', text: 'Registrations close this Sunday. Prizes up to ₹10K!', date: 'Today', isPinned: true },
-  { id: 'ann_2', societyId: 'soc_robotics', title: 'RoboWars Workshop', text: 'Learn to build line follower bots. Venue: Labs 3, Friday.', date: 'Yesterday', isPinned: false },
-  { id: 'ann_3', societyId: 'soc_ml', title: 'Guest Lecture — Google Engineer', text: 'Join us this Thursday at 4 PM in Seminar Hall 2. Topic: LLMs in Production.', date: 'Today', isPinned: true },
-  { id: 'ann_4', societyId: 'soc_cyber', title: 'CTF Competition — Register Now', text: 'College inter-CTF starts Friday midnight. Teams of 2-3. Prizes: ₹5K + goodies.', date: '2 days ago', isPinned: false },
-];
-
-const INITIAL_MESSAGES = [
-  { id: 'msg_1', senderId: 'std_002', text: 'Hey guys! Anyone up for the Hackathon registrations?', timestamp: '9:30 PM', reactions: [] },
-  { id: 'msg_2', senderId: 'std_003', text: 'Yes! I was looking for a teammate who knows React.', timestamp: '9:32 PM', reactions: [] },
-  { id: 'msg_3', senderId: 'std_005', text: 'College server is down again. Anyone else can\'t open portals?', timestamp: '9:45 PM', reactions: [] },
-  { id: 'msg_4', senderId: 'std_007', text: 'Which ML library is everyone using for the semester project?', timestamp: '9:50 PM', reactions: [] },
-  { id: 'msg_5', senderId: 'std_010', text: 'Just submitted my first open source PR 🎉 took 3 weeks lol', timestamp: '10:01 PM', reactions: [{ emoji: '👍', userId: 'std_003' }] },
-];
-
-const INITIAL_PRIVATE_MESSAGES = [
-  { id: 'pm_1', conversationId: 'std_001', senderId: 'std_003', text: 'Hey, are you free for the project meeting?', timestamp: '10:00 AM', read: true },
-  { id: 'pm_2', conversationId: 'std_003', senderId: 'std_001', text: 'Yes, around 2 PM works for me.', timestamp: '10:05 AM', read: true },
-];
-
 export function AppProvider({ children }) {
   const [currentUser, setCurrentUser] = useLocalStorage('cp_user', null);
   const [students, setStudents] = useState([]);
-  const [societies, setSocieties] = useLocalStorage('cp_societies', INITIAL_SOCIETIES);
+  const [societies, setSocieties] = useState([]);
   const [globalMessages, setGlobalMessages] = useState([]);
-  const [privateMessages, setPrivateMessages] = useLocalStorage('cp_private_msgs', INITIAL_PRIVATE_MESSAGES);
+  const [privateMessages, setPrivateMessages] = useState([]);
+  const [posts, setPosts] = useState([]);
   
   const socketRef = useRef(null);
   const [onlineUsersCount, setOnlineUsersCount] = useState(0);
@@ -213,7 +22,7 @@ export function AppProvider({ children }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [toast, setToast] = useState(null);
 
-  const [societyAnnouncements] = useState(INITIAL_ANNOUNCEMENTS);
+  const [societyAnnouncements, setSocietyAnnouncements] = useState([]);
 
   const [notifications, setNotifications] = useState([]);
 
@@ -261,11 +70,138 @@ export function AppProvider({ children }) {
     }
   }, [currentUser?.token]);
 
+  const fetchPrivateMessages = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/private-chat`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) setPrivateMessages(await res.json());
+    } catch (e) {
+      console.error('Error fetching private messages', e);
+    }
+  }, [currentUser?.token]);
+
+  const fetchSocieties = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/societies`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) setSocieties(await res.json());
+    } catch (e) {
+      console.error('Error fetching societies', e);
+    }
+  }, [currentUser?.token]);
+
+  const fetchAnnouncements = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/societies/announcements`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) setSocietyAnnouncements(await res.json());
+    } catch (e) {
+      console.error('Error fetching announcements', e);
+    }
+  }, [currentUser?.token]);
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/posts`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) setPosts(await res.json());
+    } catch (e) {
+      console.error('Error fetching posts', e);
+    }
+  }, [currentUser?.token]);
+
+  const createAnnouncement = async (societyId, title, text, isPinned = false) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/societies/${societyId}/announcements`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${currentUser.token}` 
+        },
+        body: JSON.stringify({ title, text, isPinned })
+      });
+      if (res.ok) {
+        const newAnn = await res.json();
+        setSocietyAnnouncements(prev => [newAnn, ...prev]);
+        showToast('Announcement posted successfully!', 'success');
+        return true;
+      } else {
+        const err = await res.json();
+        showToast(err.message || 'Failed to post announcement', 'error');
+        return false;
+      }
+    } catch (e) {
+      console.error('Error creating announcement', e);
+      showToast('Network error', 'error');
+      return false;
+    }
+  };
+
+  const createSociety = async (name, description, icon) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/societies`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${currentUser.token}` 
+        },
+        body: JSON.stringify({ name, description, icon })
+      });
+      if (res.ok) {
+        const newSoc = await res.json();
+        setSocieties(prev => [...prev, newSoc]);
+        showToast('Society created successfully!', 'success');
+        return true;
+      } else {
+        const err = await res.json();
+        showToast(err.message || 'Failed to create society', 'error');
+        return false;
+      }
+    } catch (e) {
+      console.error('Error creating society', e);
+      showToast('Network error', 'error');
+      return false;
+    }
+  };
+
+  const createPost = async (content) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/posts`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${currentUser.token}` 
+        },
+        body: JSON.stringify({ content })
+      });
+      if (res.ok) {
+        const newPost = await res.json();
+        setPosts(prev => [newPost, ...prev]);
+        showToast('Post created successfully!', 'success');
+        return true;
+      }
+      showToast('Failed to create post', 'error');
+      return false;
+    } catch (e) {
+      console.error('Error creating post', e);
+      showToast('Network error', 'error');
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (currentUser?.token) {
       fetchStudents();
       fetchNotifications();
       fetchGlobalMessages();
+      fetchPrivateMessages();
+      fetchSocieties();
+      fetchAnnouncements();
+      fetchPosts();
 
       socketRef.current = io(API_BASE_URL, {
         auth: { token: currentUser.token },
@@ -306,11 +242,36 @@ export function AppProvider({ children }) {
         ));
       });
 
+      // Private message listeners
+      socketRef.current.on('receive_private_message', (msg) => {
+        setPrivateMessages(prev => [...prev, msg]);
+      });
+
+      socketRef.current.on('update_private_message', (data) => {
+        setPrivateMessages(prev => prev.map(msg => 
+          msg.id === data.messageId 
+            ? { ...msg, text: data.newText, isEdited: data.isEdited }
+            : msg
+        ));
+      });
+
+      socketRef.current.on('private_message_deleted', (messageId) => {
+        setPrivateMessages(prev => prev.filter(msg => msg.id !== messageId));
+      });
+
+      socketRef.current.on('private_messages_read', (readerId) => {
+        setPrivateMessages(prev => prev.map(msg => 
+          msg.conversationId === readerId && !msg.read
+            ? { ...msg, read: true }
+            : msg
+        ));
+      });
+
       return () => {
         if (socketRef.current) socketRef.current.disconnect();
       };
     }
-  }, [currentUser?.token, fetchStudents, fetchNotifications, fetchGlobalMessages]);
+  }, [currentUser?.token, fetchStudents, fetchNotifications, fetchGlobalMessages, fetchPrivateMessages, fetchSocieties, fetchAnnouncements]);
 
   const requestOtp = async (email, type = 'register') => {
     try {
@@ -535,15 +496,24 @@ export function AppProvider({ children }) {
     }
   };
 
-  const toggleSocietyJoin = (id) => {
-    setSocieties(prev =>
-      prev.map(soc => {
-        if (soc.id !== id) return soc;
-        const joined = !soc.joined;
-        showToast(joined ? `Joined ${soc.name}! 🎉` : `Left ${soc.name}.`, joined ? 'success' : 'info');
-        return { ...soc, joined };
-      })
-    );
+  const toggleSocietyJoin = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/societies/${id}/toggle-join`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        showToast(data.message, 'success');
+        setSocieties(prev => prev.map(soc => 
+          soc.id === id ? { ...soc, joined: data.joined, membersCount: data.membersCount } : soc
+        ));
+      } else {
+        showToast('Failed to toggle society membership', 'error');
+      }
+    } catch (e) {
+      showToast('Network error', 'error');
+    }
   };
 
   const updateProfile = (updatedProfile) => {
@@ -581,43 +551,31 @@ export function AppProvider({ children }) {
   };
 
   const sendPrivateMessage = (receiverId, text, attachment = null, replyToId = null) => {
-    if ((!text.trim() && !attachment) || !currentUser) return;
+    if ((!text.trim() && !attachment) || !currentUser || !socketRef.current) return;
 
-    // Check if blocked
     if (currentUser.blockedUsers?.includes(receiverId)) {
         showToast("You cannot send messages to a blocked user.", "error");
         return;
     }
 
-    const newMsg = {
-      id: `pmsg_${Date.now()}`,
-      senderId: currentUser.id,
-      conversationId: receiverId,
-      text: text.trim(),
-      attachment,
-      replyToId,
-      isEdited: false,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      read: true,
-    };
-    setPrivateMessages(prev => [...prev, newMsg]);
+    socketRef.current.emit('send_private_message', { receiverId, text: text.trim() });
   };
 
   const editPrivateMessage = (id, newText) => {
-    setPrivateMessages(prev => prev.map(msg => 
-      msg.id === id && msg.senderId === currentUser.id 
-        ? { ...msg, text: newText.trim(), isEdited: true }
-        : msg
-    ));
-    showToast('Message updated', 'success');
+    if (!socketRef.current) return;
+    socketRef.current.emit('edit_private_message', { messageId: id, newText: newText.trim() });
   };
 
   const deletePrivateMessage = (id) => {
-    setPrivateMessages(prev => prev.filter(msg => msg.id !== id || msg.senderId !== currentUser.id));
-    showToast('Message deleted', 'success');
+    if (!socketRef.current) return;
+    socketRef.current.emit('delete_private_message', id);
   };
 
   const markPrivateConversationAsRead = (conversationUserId) => {
+    if (!socketRef.current) return;
+    socketRef.current.emit('mark_private_read', conversationUserId);
+    
+    // Optimistically update local state
     setPrivateMessages(prev => prev.map(msg => {
       if (msg.senderId === conversationUserId && !msg.read) {
         return { ...msg, read: true };
@@ -626,28 +584,49 @@ export function AppProvider({ children }) {
     }));
   };
 
-  const reportUser = (userId) => {
-    setStudents(prev => prev.map(std => {
-      if (std.id !== userId) return std;
-      const newReportCount = (std.reportCount || 0) + 1;
-      const isSuspended = newReportCount >= 5;
-      
-      if (isSuspended) {
-        showToast(`User has been automatically suspended due to multiple reports.`, "info");
+  const reportUser = async (userId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/${userId}/report`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.isSuspended) {
+          showToast(`User has been automatically suspended due to multiple reports.`, "info");
+        } else {
+          showToast("User reported successfully. Thank you for keeping the campus safe.", "success");
+        }
+        setStudents(prev => prev.map(std => std.id === userId ? { ...std, reportCount: data.reportCount, isSuspended: data.isSuspended } : std));
       } else {
-        showToast("User reported successfully. Thank you for keeping the campus safe.", "success");
+        showToast('Failed to report user', 'error');
       }
-      return { ...std, reportCount: newReportCount, isSuspended };
-    }));
+    } catch (e) {
+      showToast('Network error', 'error');
+    }
   };
 
-  const blockUser = (userId) => {
-    setCurrentUser(prev => {
-      const blocked = prev.blockedUsers || [];
-      if (blocked.includes(userId)) return prev;
-      showToast("User blocked. You will no longer see their messages or profile.", "success");
-      return { ...prev, blockedUsers: [...blocked, userId] };
-    });
+  const blockUser = async (userId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/${userId}/block`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        showToast("User blocked. You will no longer see their messages or profile.", "success");
+        setCurrentUser(prev => ({ ...prev, blockedUsers: data.blockedUsers }));
+        
+        // Also refetch students/messages to remove them from view immediately
+        fetchStudents();
+        fetchPrivateMessages();
+        fetchGlobalMessages();
+      } else {
+        showToast('Failed to block user', 'error');
+      }
+    } catch (e) {
+      showToast('Network error', 'error');
+    }
   };
 
   const fetchAdminUsers = async () => {
@@ -699,6 +678,9 @@ export function AppProvider({ children }) {
         societyAnnouncements,
         notifications,
         privateMessages,
+        posts,
+        setPosts,
+        createPost,
         unreadPrivateCount,
         toast,
         showToast,
@@ -725,7 +707,8 @@ export function AppProvider({ children }) {
         reportUser,
         blockUser,
         fetchAdminUsers,
-        toggleSuspendUserAdmin,
+        createAnnouncement,
+        createSociety
       }}
     >
       {children}
