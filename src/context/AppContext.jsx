@@ -9,7 +9,7 @@ export function AppProvider({ children }) {
   
   const currentUser = React.useMemo(() => {
     if (localUser && localUser.role === 'admin' && !localUser.isDummy) {
-      return { ...localUser, username: 'teammangment', anonUsername: 'teammangment' };
+      return { ...localUser, username: 'TEAMMANAGEMENT', anonUsername: 'TEAMMANAGEMENT' };
     }
     return localUser;
   }, [localUser]);
@@ -410,6 +410,9 @@ export function AppProvider({ children }) {
   };
 
   const createDummyAccount = () => {
+    if (localUser && !localUser.isDummy) {
+      localStorage.setItem('cp_admin_backup', JSON.stringify(localUser));
+    }
     const dummyUser = {
       _id: 'dummy_' + Date.now(),
       name: 'Test Admin',
@@ -423,6 +426,17 @@ export function AppProvider({ children }) {
     setCurrentUser(dummyUser);
     setActiveTab('chat');
     showToast('Dummy session started! Sandbox mode active.', 'success');
+  };
+
+  const exitDummyMode = () => {
+    const backup = localStorage.getItem('cp_admin_backup');
+    if (backup) {
+      setCurrentUser(JSON.parse(backup));
+      localStorage.removeItem('cp_admin_backup');
+      showToast('Sandbox mode exited. Restored admin session.', 'success');
+    } else {
+      handleLogout();
+    }
   };
 
   const sendGlobalMessage = (text, attachment = null, replyToId = null) => {
@@ -751,6 +765,7 @@ export function AppProvider({ children }) {
         handleResetPassword,
         handleLogout,
         createDummyAccount,
+        exitDummyMode,
         sendGlobalMessage,
         editGlobalMessage,
         deleteGlobalMessage,
