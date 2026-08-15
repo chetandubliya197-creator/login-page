@@ -225,6 +225,8 @@ export function AppProvider({ children }) {
     m => m.senderId !== currentUser?.id && !m.read
   ).length;
 
+  const API_BASE_URL = 'https://campuspulse-jnfo.onrender.com';
+
   const handleRegister = async (name, email, password) => {
     try {
       const emailRegex = /^[a-zA-Z]+\.[a-zA-Z]+[a-zA-Z]+[0-9]+@indoreinstitute\.com$/;
@@ -234,7 +236,7 @@ export function AppProvider({ children }) {
       }
 
       const collegeId = email.split('@')[0].toUpperCase();
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, collegeId, password }),
@@ -263,7 +265,7 @@ export function AppProvider({ children }) {
     }
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emailOrId, password }),
