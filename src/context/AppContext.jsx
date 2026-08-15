@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export const AppContext = createContext();
@@ -197,7 +197,7 @@ const INITIAL_PRIVATE_MESSAGES = [
 
 export function AppProvider({ children }) {
   const [currentUser, setCurrentUser] = useLocalStorage('cp_user', null);
-  const [students, setStudents] = useLocalStorage('cp_students', INITIAL_STUDENTS);
+  const [students, setStudents] = useState([]);
   const [societies, setSocieties] = useLocalStorage('cp_societies', INITIAL_SOCIETIES);
   const [globalMessages, setGlobalMessages] = useLocalStorage('cp_global_msgs', INITIAL_MESSAGES);
   const [privateMessages, setPrivateMessages] = useLocalStorage('cp_private_msgs', INITIAL_PRIVATE_MESSAGES);
@@ -211,10 +211,7 @@ export function AppProvider({ children }) {
 
   const [societyAnnouncements] = useState(INITIAL_ANNOUNCEMENTS);
 
-  const [notifications, setNotifications] = useState([
-    { id: 'notif_1', type: 'connection_request', message: 'Amit Patel sent you a connection request.', read: false, time: '2 mins ago' },
-    { id: 'notif_2', type: 'system', message: 'Welcome to CampusPulse! Complete your profile.', read: true, time: '1 hr ago' },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type });
@@ -226,6 +223,35 @@ export function AppProvider({ children }) {
   ).length;
 
   const API_BASE_URL = 'https://campuspulse-jnfo.onrender.com';
+
+  const fetchStudents = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) setStudents(await res.json());
+    } catch (e) {
+      console.error('Error fetching students', e);
+    }
+  }, [currentUser?.token]);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/notifications`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) setNotifications(await res.json());
+    } catch (e) {
+      console.error('Error fetching notifications', e);
+    }
+  }, [currentUser?.token]);
+
+  useEffect(() => {
+    if (currentUser?.token) {
+      fetchStudents();
+      fetchNotifications();
+    }
+  }, [currentUser?.token, fetchStudents, fetchNotifications]);
 
   const requestOtp = async (email) => {
     try {
@@ -375,12 +401,10 @@ export function AppProvider({ children }) {
     );
   };
 
-  const sendConnectRequest = (id) => {
-    // Strict Guideline: Rate Limiting for Connections (Max 10 per day)
+  const sendConnectRequest = async (id) => {
     const now = Date.now();
-    const recentConnections = connectionHistory.filter(time => now - time < 86400000); // 24 hours window
+    const recentConnections = connectionHistory.filter(time => now - time < 86400000);
     
-    // We check connection limits if the user is currently 'not_connected' and trying to connect.
     const targetStudent = students.find(s => s.id === id);
     if (targetStudent && targetStudent.connectionStatus === 'not_connected') {
       if (recentConnections.length >= 10) {
@@ -390,20 +414,66 @@ export function AppProvider({ children }) {
       setConnectionHistory([...recentConnections, now]);
     }
 
-    setStudents(prev =>
-      prev.map(std => {
-        if (std.id !== id) return std;
-        if (std.connectionStatus === 'not_connected') {
-          showToast('Connection request sent!', 'success');
-          return { ...std, connectionStatus: 'pending' };
-        }
-        if (std.connectionStatus === 'pending') {
-          showToast(`You are now connected with ${std.name}! 🎉`, 'success');
-          return { ...std, connectionStatus: 'connected' };
-        }
-        return { ...std, connectionStatus: 'not_connected' };
-      })
-    );
+    setStudents(prev => prev.map(std => {
+      if (std.id !== id) return std;
+      if (std.connectionStatus === 'not_connected') return { ...std, connectionStatus: 'pending' };
+      return std;
+    }));
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/connect/${id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        showToast(data.message || 'Failed to connect', 'error');
+        setStudents(prev => prev.map(std => std.id === id ? { ...std, connectionStatus: 'not_connected' } : std));
+        return;
+      }
+      showToast('Connection request sent!', 'success');
+      fetchNotifications();
+    } catch (e) {
+      setStudents(prev => prev.map(std => std.id === id ? { ...std, connectionStatus: 'not_connected' } : std));
+      showToast('Network error', 'error');
+    }
+  };
+
+  const acceptConnectRequest = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/accept/${id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        showToast('Connection accepted!', 'success');
+        fetchStudents();
+        fetchNotifications();
+      } else {
+        const data = await res.json();
+        showToast(data.message || 'Failed to accept request', 'error');
+      }
+    } catch (e) {
+      showToast('Network error', 'error');
+    }
+  };
+
+  const rejectConnectRequest = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/users/reject/${id}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        showToast('Connection rejected', 'info');
+        fetchStudents();
+        fetchNotifications();
+      } else {
+        showToast('Failed to reject request', 'error');
+      }
+    } catch (e) {
+      showToast('Network error', 'error');
+    }
   };
 
   const toggleSocietyJoin = (id) => {
@@ -545,6 +615,8 @@ export function AppProvider({ children }) {
         deleteGlobalMessage,
         addReactionToMessage,
         sendConnectRequest,
+        acceptConnectRequest,
+        rejectConnectRequest,
         toggleSocietyJoin,
         updateProfile,
         completeOnboarding,

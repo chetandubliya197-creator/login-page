@@ -37,6 +37,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/users', require('./routes/user.routes'));
 
 // Socket.io connection (will expand in Phase 3)
 io.on('connection', (socket) => {
