@@ -675,6 +675,16 @@ export function AppProvider({ children }) {
     }
   };
 
+  const installPWA = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+      showToast('App installed successfully!', 'success');
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
