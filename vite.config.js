@@ -33,11 +33,11 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ],
-        start_url: '/login-page/',
-        scope: '/login-page/',
-        id: '/login-page/'
+        start_url: '/',
+        scope: '/',
+        id: '/'
       }
     })
   ],
-  base: '/login-page/',
+  base: '/',
 })
