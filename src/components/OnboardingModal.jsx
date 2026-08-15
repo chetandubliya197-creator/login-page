@@ -34,31 +34,41 @@ export default function OnboardingModal() {
   };
 
   const avatars = [
-    // Boys / Men
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Jack',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Max',
-    'https://api.dicebear.com/7.x/micah/svg?seed=Christian',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus',
-    'https://api.dicebear.com/7.x/notionists/svg?seed=Felix',
-    'https://api.dicebear.com/7.x/pixel-art/svg?seed=John',
-    'https://api.dicebear.com/7.x/personas/svg?seed=Leo',
-    'https://api.dicebear.com/7.x/big-ears/svg?seed=Sam',
+    // Girls - Flat Style
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia&backgroundColor=ffdfbf',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&backgroundColor=c0aede',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Chloe&backgroundColor=d1d4f9',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica&backgroundColor=b6e3f4',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Jocelyn&backgroundColor=ffd5dc',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria&backgroundColor=ffdfbf',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe&backgroundColor=c0aede',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Lily&backgroundColor=ffdfbf',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Aria&backgroundColor=ffd5dc',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Amelia&backgroundColor=b6e3f4',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Harper&backgroundColor=c0aede',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Evelyn&backgroundColor=d1d4f9',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Abigail&backgroundColor=ffdfbf',
 
-    // Girls / Women
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Jocelyn',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Mia',
-    'https://api.dicebear.com/7.x/micah/svg?seed=Leah',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-    'https://api.dicebear.com/7.x/notionists/svg?seed=Aneka',
-    'https://api.dicebear.com/7.x/pixel-art/svg?seed=Jane',
-    'https://api.dicebear.com/7.x/personas/svg?seed=Zoe',
-    'https://api.dicebear.com/7.x/big-smile/svg?seed=Chloe',
+    // Boys - Flat Style
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack&backgroundColor=b6e3f4',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus&backgroundColor=d1d4f9',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=ffdfbf',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver&backgroundColor=ffd5dc',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas&backgroundColor=c0aede',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Ethan&backgroundColor=b6e3f4',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden&backgroundColor=d1d4f9',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Mason&backgroundColor=b6e3f4',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Logan&backgroundColor=d1d4f9',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Elijah&backgroundColor=ffd5dc',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Jackson&backgroundColor=c0aede',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Carter&backgroundColor=ffdfbf',
 
-    // Fun & Others
-    'https://api.dicebear.com/7.x/bottts/svg?seed=Robot1',
-    'https://api.dicebear.com/7.x/bottts/svg?seed=Robot2',
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy',
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool'
+    // Fun / Creative
+    'https://api.dicebear.com/7.x/bottts/svg?seed=Robot1&backgroundColor=b6e3f4',
+    'https://api.dicebear.com/7.x/bottts/svg?seed=Robot2&backgroundColor=d1d4f9',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy&backgroundColor=ffd5dc',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool&backgroundColor=ffdfbf',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Wink&backgroundColor=c0aede',
   ];
 
   const handleNext = () => {
