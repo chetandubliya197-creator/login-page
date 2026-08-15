@@ -42,6 +42,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/chat', require('./routes/chat.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
 
 // Keep track of connected users { userId: socketId }
 const onlineUsers = new Map();
@@ -121,7 +122,12 @@ io.on('connection', async (socket) => {
 
     socket.on('delete_global_message', async (messageId) => {
         try {
-            const msg = await Message.findOneAndDelete({ _id: messageId, senderId: socket.userId });
+            const user = await User.findById(socket.userId);
+            if (!user) return;
+            
+            const query = user.role === 'admin' ? { _id: messageId } : { _id: messageId, senderId: socket.userId };
+            const msg = await Message.findOneAndDelete(query);
+            
             if (msg) {
                 io.to('global_chat').emit('message_deleted', messageId);
             }

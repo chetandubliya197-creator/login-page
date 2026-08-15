@@ -67,6 +67,7 @@ const registerUser = async (req, res) => {
                 anonUsername: user.anonUsername,
                 avatar: user.avatar,
                 isOnboarded: user.isOnboarded,
+                role: user.role,
                 token
             });
         } else {
@@ -115,6 +116,7 @@ const loginUser = async (req, res) => {
                 year: user.year,
                 interests: user.interests,
                 isOnboarded: user.isOnboarded,
+                role: user.role,
                 token
             });
         } else {
@@ -155,7 +157,8 @@ const getUserProfile = async (req, res) => {
                 branch: user.branch,
                 year: user.year,
                 interests: user.interests,
-                isOnboarded: user.isOnboarded
+                isOnboarded: user.isOnboarded,
+                role: user.role
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -191,6 +194,7 @@ const completeOnboarding = async (req, res) => {
                 year: updatedUser.year,
                 interests: updatedUser.interests,
                 isOnboarded: updatedUser.isOnboarded,
+                role: updatedUser.role,
             });
         } else {
             res.status(404).json({ message: 'User not found' });

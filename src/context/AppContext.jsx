@@ -650,6 +650,42 @@ export function AppProvider({ children }) {
     });
   };
 
+  const fetchAdminUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/users`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      return [];
+    } catch (e) {
+      console.error('Error fetching admin users', e);
+      return [];
+    }
+  };
+
+  const toggleSuspendUserAdmin = async (userId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/toggle-suspend`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        showToast(data.message, 'success');
+        return true;
+      } else {
+        const err = await res.json();
+        showToast(err.message || 'Failed to toggle suspension', 'error');
+        return false;
+      }
+    } catch (e) {
+      showToast('Network error', 'error');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -688,6 +724,8 @@ export function AppProvider({ children }) {
         markPrivateConversationAsRead,
         reportUser,
         blockUser,
+        fetchAdminUsers,
+        toggleSuspendUserAdmin,
       }}
     >
       {children}

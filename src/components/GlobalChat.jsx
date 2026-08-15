@@ -252,6 +252,15 @@ export default function GlobalChat() {
                               <Ban className="w-3.5 h-3.5" />
                               Block User
                             </button>
+                            {currentUser?.role === 'admin' && (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); deleteGlobalMessage(msg.id); setActiveMenu(null); }}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors border-t border-zinc-100"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Admin Delete
+                              </button>
+                            )}
                           </>
                         )}
                       </div>

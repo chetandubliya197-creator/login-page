@@ -15,6 +15,7 @@ import PrivateChat from './components/PrivateChat';
 import Toast from './components/Toast';
 import DashboardView from './components/DashboardView';
 import HelpCenterView from './components/HelpCenterView';
+import AdminPanel from './components/AdminPanel';
 
 function InnerApp() {
   const { currentUser, activeTab, setActiveTab, handleLogout } = useContext(AppContext);
@@ -49,6 +50,7 @@ function InnerApp() {
         {activeTab === 'messages' && <PrivateChat />}
         {activeTab === 'settings' && <SettingsView />}
         {activeTab === 'help' && <HelpCenterView />}
+        {activeTab === 'admin' && <AdminPanel />}
         <GlobalSearchModal
           isOpen={activeTab === 'search'}
           onClose={() => setActiveTab('dashboard')}

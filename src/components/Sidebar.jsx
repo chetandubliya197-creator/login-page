@@ -14,7 +14,8 @@ import {
   LogOut,
   Plus,
   Menu as MenuIcon,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 import { Activity, GraduationCap } from 'lucide-react'; // For the logo
 
@@ -213,6 +214,22 @@ export default function Sidebar({ onLogout, onNewPost }) {
                 ))}
 
                 <div className="h-px bg-zinc-100 my-2"></div>
+
+                {currentUser?.role === 'admin' && (
+                    <button 
+                        onClick={() => setActiveTab('admin')}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-bold transition-all duration-200 w-full text-left group
+                            ${activeTab === 'admin' 
+                                ? 'bg-rose-50 text-rose-600' 
+                                : 'text-rose-600/70 hover:text-rose-600 hover:bg-rose-50/50'
+                            }`}
+                    >
+                        <span className={`transition-transform duration-200 ${activeTab === 'admin' ? 'scale-110' : 'group-hover:scale-105'}`}>
+                            <Shield className="w-5 h-5" />
+                        </span>
+                        Admin Panel
+                    </button>
+                )}
 
                 <button 
                     onClick={() => setActiveTab('help')}
