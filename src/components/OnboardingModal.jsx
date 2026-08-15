@@ -34,14 +34,27 @@ export default function OnboardingModal() {
   };
 
   const avatars = [
-    'https://api.dicebear.com/7.x/notionists/svg?seed=Felix',
-    'https://api.dicebear.com/7.x/notionists/svg?seed=Aneka',
+    // Boys / Men
     'https://api.dicebear.com/7.x/adventurer/svg?seed=Jack',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=Jocelyn',
-    'https://api.dicebear.com/7.x/micah/svg?seed=Leah',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Max',
     'https://api.dicebear.com/7.x/micah/svg?seed=Christian',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&style=circle',
-    'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus&style=circle',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus',
+    'https://api.dicebear.com/7.x/notionists/svg?seed=Felix',
+    'https://api.dicebear.com/7.x/pixel-art/svg?seed=John',
+    'https://api.dicebear.com/7.x/personas/svg?seed=Leo',
+    'https://api.dicebear.com/7.x/big-ears/svg?seed=Sam',
+
+    // Girls / Women
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Jocelyn',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Mia',
+    'https://api.dicebear.com/7.x/micah/svg?seed=Leah',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
+    'https://api.dicebear.com/7.x/notionists/svg?seed=Aneka',
+    'https://api.dicebear.com/7.x/pixel-art/svg?seed=Jane',
+    'https://api.dicebear.com/7.x/personas/svg?seed=Zoe',
+    'https://api.dicebear.com/7.x/big-smile/svg?seed=Chloe',
+
+    // Fun & Others
     'https://api.dicebear.com/7.x/bottts/svg?seed=Robot1',
     'https://api.dicebear.com/7.x/bottts/svg?seed=Robot2',
     'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy',

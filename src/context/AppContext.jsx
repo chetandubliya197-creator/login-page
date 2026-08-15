@@ -5,7 +5,15 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 export const AppContext = createContext();
 
 export function AppProvider({ children }) {
-  const [currentUser, setCurrentUser] = useLocalStorage('cp_user', null);
+  const [localUser, setCurrentUser] = useLocalStorage('cp_user', null);
+  
+  const currentUser = React.useMemo(() => {
+    if (localUser && localUser.role === 'admin' && !localUser.isDummy) {
+      return { ...localUser, username: 'teammangment', anonUsername: 'teammangment' };
+    }
+    return localUser;
+  }, [localUser]);
+
   const [students, setStudents] = useState([]);
   const [societies, setSocieties] = useState([]);
   const [globalMessages, setGlobalMessages] = useState([]);
