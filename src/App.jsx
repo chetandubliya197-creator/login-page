@@ -19,14 +19,18 @@ import AdminPanel from './components/AdminPanel';
 
 function InnerApp() {
   const { currentUser, activeTab, setActiveTab, handleLogout } = useContext(AppContext);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Check if running as an installed PWA
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  
+  const [isModalOpen, setIsModalOpen] = useState(isPWA);
 
   if (!currentUser) {
     return (
       <div className="relative min-h-screen bg-zinc-50 text-zinc-900 flex flex-col font-sans">
         <Navbar onLoginClick={() => setIsModalOpen(true)} />
         <HeroSection onStartClick={() => setIsModalOpen(true)} />
-        <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} isPWA={isPWA} />
         <Toast />
         <footer className="w-full py-8 text-center text-xs text-zinc-500 border-t border-zinc-200 relative z-10 glassmorphism bg-white/50">
           <p>&copy; {new Date().getFullYear()} CampusPulse. Made with ❤️ for college students.</p>

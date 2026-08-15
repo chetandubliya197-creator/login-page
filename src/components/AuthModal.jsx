@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../context/AppContext';
 import { X, Mail, Lock, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
-export default function AuthModal({ isOpen, onClose }) {
+export default function AuthModal({ isOpen, onClose, isPWA }) {
 
   const { handleLogin, handleRegister, handleResetPassword, showToast, requestOtp } = useContext(AppContext);
 
@@ -120,17 +120,19 @@ export default function AuthModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm animate-fade-in transition-opacity duration-300">
 
-      <div className="absolute inset-0" onClick={onClose}></div>
+      <div className="absolute inset-0" onClick={!isPWA ? onClose : undefined}></div>
 
       <div className="relative w-full max-w-[850px] min-h-[680px] md:min-h-[580px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row z-10 transition-transform duration-300 scale-100">
 
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-40 p-2.5 rounded-full bg-zinc-100 md:bg-white/50 hover:bg-zinc-200 text-zinc-500 transition-all duration-300 border border-zinc-200 shadow-sm"
-          aria-label="Close modal"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {!isPWA && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-40 p-2.5 rounded-full bg-zinc-100 md:bg-white/50 hover:bg-zinc-200 text-zinc-500 transition-all duration-300 border border-zinc-200 shadow-sm"
+            aria-label="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
         <div 
           className={`hidden md:block absolute z-20 bg-emerald-600 transition-all duration-700 ease-in-out shadow-xl ${
