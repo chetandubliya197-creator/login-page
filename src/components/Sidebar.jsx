@@ -263,7 +263,7 @@ export default function Sidebar({ onLogout }) {
                         />
                         <div className="overflow-hidden">
                             <p className="text-[13px] font-bold text-zinc-900 truncate">{currentUser.name}</p>
-                            <p className="text-[11px] text-zinc-500 font-medium truncate">@{currentUser.anonUsername.toLowerCase()}</p>
+                            <p className="text-[11px] text-zinc-500 font-medium truncate">@{currentUser.username || currentUser.anonUsername}</p>
                         </div>
                     </div>
                     <button onClick={() => { onLogout(); setIsMobileMenuOpen(false); }} className="text-zinc-400 hover:text-rose-500 p-2 rounded-full hover:bg-rose-50 transition-colors">

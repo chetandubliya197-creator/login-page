@@ -116,7 +116,10 @@ export default function ProfileView() {
           </div>
 
           <div className="flex-1 text-center sm:text-left">
-            <h3 className="text-2xl font-black text-zinc-950 tracking-tight">{currentUser.name}</h3>
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2 justify-center sm:justify-start">
+                <h3 className="text-2xl font-black text-zinc-950 tracking-tight">{currentUser.name}</h3>
+                <span className="text-sm font-bold text-zinc-400">@{currentUser.username || currentUser.anonUsername}</span>
+            </div>
             <p className="text-[15px] font-bold text-zinc-500 mt-1">{currentUser.branch} · {currentUser.year}</p>
             <p className="text-sm text-zinc-400 font-medium mt-0.5">{currentUser.email}</p>
 

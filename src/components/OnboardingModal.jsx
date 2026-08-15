@@ -6,11 +6,14 @@ export default function OnboardingModal() {
   const { currentUser, completeOnboarding } = useContext(AppContext);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    username: '',
+    avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=Felix',
     branch: '',
     year: '1st Year',
     interests: []
   });
 
+  const [usernameError, setUsernameError] = useState('');
   const [currentInterest, setCurrentInterest] = useState('');
 
   const suggestedInterests = ['Coding', 'Design', 'Music', 'Sports', 'Gaming', 'Debate', 'Robotics', 'Photography'];
@@ -30,12 +33,40 @@ export default function OnboardingModal() {
     }));
   };
 
+  const avatars = [
+    'https://api.dicebear.com/7.x/notionists/svg?seed=Felix',
+    'https://api.dicebear.com/7.x/notionists/svg?seed=Aneka',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Jack',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Jocelyn',
+    'https://api.dicebear.com/7.x/micah/svg?seed=Leah',
+    'https://api.dicebear.com/7.x/micah/svg?seed=Christian',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&style=circle',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus&style=circle',
+    'https://api.dicebear.com/7.x/bottts/svg?seed=Robot1',
+    'https://api.dicebear.com/7.x/bottts/svg?seed=Robot2',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Happy',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Cool'
+  ];
+
   const handleNext = () => {
-    if (step === 1 && !formData.branch) {
+    if (step === 1) {
+      if (!formData.username.trim()) {
+        setUsernameError("Username cannot be empty");
+        return;
+      }
+      if (formData.username.includes(' ')) {
+        setUsernameError("Username cannot contain spaces");
+        return;
+      }
+      setUsernameError('');
+      setStep(2);
+      return;
+    }
+    if (step === 2 && !formData.branch) {
       alert("Please enter your branch to continue.");
       return;
     }
-    setStep(2);
+    setStep(3);
   };
 
   const handleFinish = () => {
@@ -53,7 +84,63 @@ export default function OnboardingModal() {
             <p className="text-zinc-500 text-sm font-medium">Let's set up your profile so you can connect with the right people on campus.</p>
           </div>
 
-          {step === 1 ? (
+          {step === 1 && (
+            <div className="space-y-6 animate-slide-up">
+              <div>
+                <label className="flex items-center gap-2 text-sm text-zinc-700 font-bold mb-2">
+                  <BookOpen className="w-4 h-4 text-emerald-600" />
+                  Choose an Avatar
+                </label>
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mb-2 max-h-48 overflow-y-auto p-1">
+                  {avatars.map((avatarUrl, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setFormData(prev => ({...prev, avatar: avatarUrl}))}
+                      className={`relative aspect-square rounded-2xl overflow-hidden transition-all duration-200 border-2 ${
+                        formData.avatar === avatarUrl
+                        ? 'border-emerald-500 shadow-md scale-105'
+                        : 'border-transparent hover:scale-105 hover:bg-zinc-50'
+                      }`}
+                    >
+                      <img src={avatarUrl} alt="avatar option" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 text-sm text-zinc-700 font-bold mb-2">
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                  Pick a Username
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">@</span>
+                  <input
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => setFormData(prev => ({...prev, username: e.target.value.toLowerCase()}))}
+                    placeholder="coolstudent"
+                    className={`w-full bg-zinc-50 border rounded-xl pl-9 pr-4 py-3.5 text-zinc-900 font-medium placeholder-zinc-400 focus:outline-none focus:ring-1 transition-colors ${
+                      usernameError ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500' : 'border-zinc-200 focus:border-emerald-500 focus:ring-emerald-500'
+                    }`}
+                    autoFocus
+                  />
+                </div>
+                {usernameError && <p className="text-xs text-rose-500 mt-2 font-medium">{usernameError}</p>}
+                <p className="text-xs text-zinc-500 mt-2 font-medium">This will be your unique identity on CampusPulse.</p>
+              </div>
+
+              <button
+                onClick={handleNext}
+                className="w-full flex items-center justify-center gap-2 py-4 mt-10 rounded-full bg-zinc-950 text-white font-bold text-base hover:-translate-y-0.5 transition-transform shadow-lg hover:shadow-xl"
+              >
+                Next Step
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+
+          {step === 2 && (
             <div className="space-y-6 animate-slide-up">
               <div>
                 <label className="flex items-center gap-2 text-sm text-zinc-700 font-bold mb-2">
@@ -92,15 +179,25 @@ export default function OnboardingModal() {
                 </div>
               </div>
 
-              <button
-                onClick={handleNext}
-                className="w-full flex items-center justify-center gap-2 py-4 mt-10 rounded-full bg-zinc-950 text-white font-bold text-base hover:-translate-y-0.5 transition-transform shadow-lg hover:shadow-xl"
-              >
-                Next Step
-                <ArrowRight className="w-5 h-5" />
-              </button>
+              <div className="flex gap-3 mt-10">
+                <button
+                  onClick={() => setStep(1)}
+                  className="flex-1 py-4 rounded-full bg-white border-2 border-zinc-200 text-zinc-700 font-bold text-sm hover:bg-zinc-50 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="flex-1 flex items-center justify-center gap-2 py-4 rounded-full bg-zinc-950 text-white font-bold text-base hover:-translate-y-0.5 transition-transform shadow-lg hover:shadow-xl"
+                >
+                  Next Step
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-          ) : (
+          )}
+
+          {step === 3 && (
             <div className="space-y-6 animate-slide-up">
               <div>
                 <label className="flex items-center gap-2 text-sm text-zinc-700 font-bold mb-2">
@@ -162,7 +259,7 @@ export default function OnboardingModal() {
 
               <div className="flex gap-3 mt-10">
                 <button
-                  onClick={() => setStep(1)}
+                  onClick={() => setStep(2)}
                   className="flex-1 py-4 rounded-full bg-white border-2 border-zinc-200 text-zinc-700 font-bold text-sm hover:bg-zinc-50 transition-colors"
                 >
                   Back

@@ -548,8 +548,15 @@ export function AppProvider({ children }) {
       }
 
       const updatedUser = await response.json();
-      setCurrentUser(prev => ({ ...prev, ...updatedUser, id: updatedUser._id, token: prev.token, isOnboarded: true }));
-      showToast('Welcome to CampusPulse! 🎉', 'success');
+      setCurrentUser(prev => ({ 
+        ...prev, 
+        ...updatedUser, 
+        ...onboardingData, // Merge local choices last to override backend generic defaults
+        id: updatedUser._id, 
+        token: prev.token, 
+        isOnboarded: true 
+      }));
+      showToast('Welcome to CampusPulse! 🚀', 'success');
     } catch (error) {
       console.error(error);
       showToast('Network error while saving profile.', 'error');
