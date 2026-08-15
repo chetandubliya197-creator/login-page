@@ -16,7 +16,7 @@ const messageSchema = new mongoose.Schema({
         trim: true
     },
     attachment: {
-        type: String
+        type: Object
     },
     replyToId: {
         type: mongoose.Schema.Types.ObjectId,
