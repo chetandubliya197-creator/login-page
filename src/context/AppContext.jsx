@@ -36,6 +36,8 @@ export function AppProvider({ children }) {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
   const [privateMessages, setPrivateMessages] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [groupMessages, setGroupMessages] = useState([]);
   const [posts, setPosts] = useState([]);
   
   const socketRef = useRef(null);
@@ -117,6 +119,68 @@ export function AppProvider({ children }) {
       console.error('Error fetching private messages', e);
     }
   }, [currentUser?.token]);
+
+  const fetchGroups = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/groups`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) setGroups(await res.json());
+    } catch (e) {
+      console.error('Error fetching groups', e);
+    }
+  }, [currentUser?.token]);
+
+  const fetchGroupMessages = useCallback(async (groupId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}/messages`, {
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        const msgs = await res.json();
+        setGroupMessages(prev => {
+          const filtered = prev.filter(m => m.groupId !== groupId);
+          return [...filtered, ...msgs];
+        });
+      }
+    } catch (e) {
+      console.error('Error fetching group messages', e);
+    }
+  }, [currentUser?.token]);
+
+  const createGroup = async (name, members) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/groups`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${currentUser.token}` 
+        },
+        body: JSON.stringify({ name, members })
+      });
+      if (res.ok) {
+        const newGroup = await res.json();
+        setGroups(prev => [newGroup, ...prev]);
+        showToast('Group created successfully!', 'success');
+        
+        // Notify socket to join room
+        if (socketRef.current) {
+            socketRef.current.emit('join_group_room', newGroup._id);
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Error creating group', e);
+      return false;
+    }
+  };
+
+  const sendGroupMessage = (groupId, text) => {
+    if (socketRef.current) {
+        socketRef.current.emit('send_group_message', { groupId, text });
+    }
+  };
 
   const fetchSocieties = useCallback(async () => {
     try {
@@ -239,6 +303,7 @@ export function AppProvider({ children }) {
       fetchSocieties();
       fetchAnnouncements();
       fetchPosts();
+      fetchGroups();
 
       socketRef.current = io(API_BASE_URL, {
         auth: { token: currentUser.token },
@@ -313,11 +378,15 @@ export function AppProvider({ children }) {
         ));
       });
 
+      socketRef.current.on('receive_group_message', (msg) => {
+        setGroupMessages(prev => [...prev, msg]);
+      });
+
       return () => {
         if (socketRef.current) socketRef.current.disconnect();
       };
     }
-  }, [currentUser?.token, fetchStudents, fetchNotifications, fetchGlobalMessages, fetchPrivateMessages, fetchSocieties, fetchAnnouncements]);
+  }, [currentUser?.token, fetchStudents, fetchNotifications, fetchGlobalMessages, fetchPrivateMessages, fetchSocieties, fetchAnnouncements, fetchGroups]);
 
   const requestOtp = async (email, type = 'register') => {
     try {
@@ -808,6 +877,11 @@ export function AppProvider({ children }) {
         posts,
         setPosts,
         createPost,
+        groups,
+        groupMessages,
+        createGroup,
+        sendGroupMessage,
+        fetchGroupMessages,
         unreadPrivateCount,
         toast,
         showToast,

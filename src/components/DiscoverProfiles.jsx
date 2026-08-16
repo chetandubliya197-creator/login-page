@@ -18,12 +18,15 @@ const STATUS_CONFIG = {
 };
 
 export default function DiscoverProfiles() {
-  const { currentUser, students, sendConnectRequest, reportUser, blockUser, notifications, acceptConnectRequest, rejectConnectRequest } = useContext(AppContext);
+  const { currentUser, students, sendConnectRequest, reportUser, blockUser, notifications, acceptConnectRequest, rejectConnectRequest, groups, createGroup } = useContext(AppContext);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBranch, setFilterBranch] = useState('All');
   const [activeInternalTab, setActiveInternalTab] = useState('discover'); 
   const [activeMenu, setActiveMenu] = useState(null);
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState([]);
 
   const visibleStudents = students.filter(s => 
     !currentUser.blockedUsers?.includes(s.id) && 
@@ -76,6 +79,15 @@ export default function DiscoverProfiles() {
                     {visibleStudents.filter(s => s.connectionStatus === 'connected').length}
                 </span>
             </button>
+            <button 
+                onClick={() => setActiveInternalTab('groups')}
+                className={`pb-3 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeInternalTab === 'groups' ? 'text-zinc-950 border-emerald-600' : 'text-zinc-500 border-transparent hover:text-zinc-800'}`}
+            >
+                Groups
+                <span className="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 text-[10px] border border-zinc-200">
+                    {groups?.length || 0}
+                </span>
+            </button>
         </div>
 
         <div className="flex gap-3 py-4 bg-white">
@@ -108,7 +120,35 @@ export default function DiscoverProfiles() {
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-        {filteredStudents.length === 0 ? (
+        {activeInternalTab === 'groups' ? (
+            <div className="space-y-6">
+                <button 
+                    onClick={() => setShowCreateGroupModal(true)}
+                    className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-sm transition-all"
+                >
+                    + Create New Group
+                </button>
+
+                {groups.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-48 text-zinc-400 border-2 border-dashed border-zinc-200 rounded-3xl">
+                        <p className="text-sm font-bold text-zinc-500">No groups yet. Create one to chat with friends!</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {groups.map(group => (
+                            <div key={group._id} className="relative rounded-3xl border border-zinc-200 bg-white p-6 flex flex-col gap-4 shadow-sm hover:shadow-xl transition-all">
+                                <h3 className="font-black text-lg text-zinc-900">{group.name}</h3>
+                                <p className="text-xs font-bold text-zinc-500">{group.members?.length} Members</p>
+                                <p className="text-xs text-zinc-400">Created by {group.createdBy === currentUser.id ? 'You' : 'Someone else'}</p>
+                                <button className="mt-2 w-full py-2 bg-zinc-100 text-zinc-700 font-bold rounded-xl text-sm">
+                                    Check PrivateChat Sidebar
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        ) : filteredStudents.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-zinc-400">
             <svg className="w-12 h-12 mb-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -267,6 +307,90 @@ export default function DiscoverProfiles() {
           </div>
         )}
       </div>
+      
+      {showCreateGroupModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+                <div className="p-6 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+                    <h3 className="font-black text-xl text-zinc-900">Create New Group</h3>
+                    <button 
+                        onClick={() => {
+                            setShowCreateGroupModal(false);
+                            setNewGroupName('');
+                            setSelectedMembers([]);
+                        }}
+                        className="p-2 bg-white hover:bg-zinc-100 rounded-full text-zinc-500 transition-colors shadow-sm"
+                    >
+                        <Ban className="w-5 h-5" />
+                    </button>
+                </div>
+                
+                <div className="p-6 flex-1 overflow-y-auto space-y-6">
+                    <div>
+                        <label className="block text-sm font-bold text-zinc-700 mb-2">Group Name</label>
+                        <input 
+                            type="text" 
+                            value={newGroupName}
+                            onChange={(e) => setNewGroupName(e.target.value)}
+                            placeholder="e.g. Project Team Alpha"
+                            className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label className="block text-sm font-bold text-zinc-700 mb-2">Select Members</label>
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                            {visibleStudents.filter(s => s.connectionStatus === 'connected').length === 0 ? (
+                                <p className="text-sm text-zinc-500 italic">You don't have any connections yet.</p>
+                            ) : (
+                                visibleStudents.filter(s => s.connectionStatus === 'connected').map(student => (
+                                    <label key={student.id} className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 hover:bg-zinc-50 cursor-pointer transition-colors">
+                                        <input 
+                                            type="checkbox"
+                                            checked={selectedMembers.includes(student.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedMembers(prev => [...prev, student.id]);
+                                                } else {
+                                                    setSelectedMembers(prev => prev.filter(id => id !== student.id));
+                                                }
+                                            }}
+                                            className="w-4 h-4 text-emerald-600 rounded border-zinc-300 focus:ring-emerald-500"
+                                        />
+                                        <div className="flex items-center gap-3">
+                                            <img src={student.avatar} alt="Avatar" className="w-8 h-8 rounded-full border border-zinc-200 object-cover" />
+                                            <div>
+                                                <p className="text-sm font-bold text-zinc-900">{student.name}</p>
+                                                <p className="text-xs font-bold text-zinc-500">{student.branch}</p>
+                                            </div>
+                                        </div>
+                                    </label>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6 border-t border-zinc-100 bg-zinc-50/50 flex justify-end">
+                    <button 
+                        onClick={async () => {
+                            if (!newGroupName.trim() || selectedMembers.length === 0) return;
+                            const success = await createGroup(newGroupName, selectedMembers);
+                            if (success) {
+                                setShowCreateGroupModal(false);
+                                setNewGroupName('');
+                                setSelectedMembers([]);
+                            }
+                        }}
+                        disabled={!newGroupName.trim() || selectedMembers.length === 0}
+                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-bold rounded-xl text-sm transition-all shadow-sm"
+                    >
+                        Create Group
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 }

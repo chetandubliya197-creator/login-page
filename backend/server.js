@@ -98,6 +98,7 @@ app.use('/api/auth', authRateLimit, require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/chat', require('./routes/chat.routes'));
 app.use('/api/private-chat', require('./routes/privateChat.routes'));
+app.use('/api/groups', require('./routes/group.routes'));
 app.use('/api/societies', require('./routes/society.routes'));
 app.use('/api/posts', require('./routes/post.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
@@ -131,6 +132,38 @@ io.on('connection', async (socket) => {
 
     // Join Global Chat Room
     socket.join('global_chat');
+
+    // Join Group Rooms
+    socket.on('join_group_room', (groupId) => {
+        socket.join(`group_${groupId}`);
+    });
+
+    socket.on('send_group_message', async (data) => {
+        try {
+            const { groupId, text } = data;
+            const GroupMessage = require('./models/GroupMessage.model');
+            const msg = await GroupMessage.create({
+                groupId,
+                senderId: socket.userId,
+                text,
+                readBy: [socket.userId]
+            });
+            await msg.populate('senderId', 'name anonUsername avatar');
+            
+            const formattedMsg = {
+                id: msg._id.toString(),
+                groupId: msg.groupId.toString(),
+                senderId: msg.senderId._id.toString(),
+                senderInfo: msg.senderId,
+                text: msg.text,
+                timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            io.to(`group_${groupId}`).emit('receive_group_message', formattedMsg);
+        } catch (error) {
+            console.error('Socket group msg error:', error);
+        }
+    });
 
     socket.on('send_global_message', async (data) => {
         try {

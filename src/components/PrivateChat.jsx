@@ -3,7 +3,7 @@ import { AppContext } from '../context/AppContext';
 import { Send, User, Paperclip, X, FileText, ArrowLeft, MoreVertical, Flag, Ban, Search, Phone, Video, Smile, MessageSquareText, Reply, Edit2, Trash2, ChevronDown, Check } from 'lucide-react';
 
 export default function PrivateChat() {
-  const { currentUser, students, privateMessages, sendPrivateMessage, editPrivateMessage, deletePrivateMessage, reportUser, blockUser, markPrivateConversationAsRead } = useContext(AppContext);
+  const { currentUser, students, privateMessages, sendPrivateMessage, editPrivateMessage, deletePrivateMessage, reportUser, blockUser, markPrivateConversationAsRead, groups, groupMessages, sendGroupMessage } = useContext(AppContext);
   const [activeChat, setActiveChat] = useState(null); 
   const [inputText, setInputText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,14 +26,25 @@ export default function PrivateChat() {
     !currentUser.blockedUsers?.includes(s.id) &&
     !s.isSuspended &&
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).map(s => ({ ...s, chatType: 'private' }));
 
-  const getLatestMessage = (studentId) => {
-    const conversation = privateMessages.filter(m => 
-        (m.senderId === currentUser.id && m.conversationId === studentId) ||
-        (m.senderId === studentId && m.conversationId === currentUser.id)
-    );
-    return conversation.length > 0 ? conversation[conversation.length - 1] : null;
+  const filteredGroups = (groups || []).filter(g => 
+    g.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ).map(g => ({ ...g, id: g._id, chatType: 'group', avatar: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(g.name) + '&background=random' }));
+
+  const allConversations = [...connectedStudents, ...filteredGroups];
+
+  const getLatestMessage = (convo) => {
+    if (convo.chatType === 'group') {
+        const msgs = groupMessages.filter(m => m.groupId === convo.id);
+        return msgs.length > 0 ? msgs[msgs.length - 1] : null;
+    } else {
+        const conversation = privateMessages.filter(m => 
+            (m.senderId === currentUser.id && m.conversationId === convo.id) ||
+            (m.senderId === convo.id && m.conversationId === currentUser.id)
+        );
+        return conversation.length > 0 ? conversation[conversation.length - 1] : null;
+    }
   };
 
   const scrollToBottom = () => {
@@ -98,7 +109,11 @@ export default function PrivateChat() {
       editPrivateMessage(editingMsg.id, inputText.trim());
       setEditingMsg(null);
     } else {
-      sendPrivateMessage(activeChat.id, inputText.trim(), attachment, replyingTo?.id || null);
+      if (activeChat.chatType === 'group') {
+        sendGroupMessage(activeChat.id, inputText.trim());
+      } else {
+        sendPrivateMessage(activeChat.id, inputText.trim(), attachment, replyingTo?.id || null);
+      }
     }
     
     setInputText('');
@@ -133,10 +148,12 @@ export default function PrivateChat() {
   };
 
   const currentConversation = activeChat 
-    ? privateMessages.filter(m => 
-        (m.senderId === currentUser.id && m.conversationId === activeChat.id) ||
-        (m.senderId === activeChat.id && m.conversationId === currentUser.id)
-      )
+    ? (activeChat.chatType === 'group' 
+        ? groupMessages.filter(m => m.groupId === activeChat.id)
+        : privateMessages.filter(m => 
+            (m.senderId === currentUser.id && m.conversationId === activeChat.id) ||
+            (m.senderId === activeChat.id && m.conversationId === currentUser.id)
+          ))
     : [];
 
   return (
@@ -165,35 +182,35 @@ export default function PrivateChat() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-            {connectedStudents.length === 0 ? (
+            {allConversations.length === 0 ? (
                 <div className="p-8 text-center text-zinc-500 text-sm font-medium">
                     No conversations found.
                 </div>
             ) : (
                 <div className="flex flex-col">
-                    {connectedStudents.map(student => {
-                        const latestMsg = getLatestMessage(student.id);
-                        const isUnread = latestMsg && latestMsg.senderId === student.id && !latestMsg.read;
+                    {allConversations.map(convo => {
+                        const latestMsg = getLatestMessage(convo);
+                        const isUnread = latestMsg && latestMsg.senderId !== currentUser.id && !latestMsg.read;
 
                         return (
                         <button
-                            key={student.id}
-                            onClick={() => { setActiveChat(student); setIsMenuOpen(false); }}
+                            key={convo.id}
+                            onClick={() => { setActiveChat(convo); setIsMenuOpen(false); }}
                             className={`w-full flex items-center gap-3 p-4 transition-all text-left border-b border-zinc-50
-                                ${activeChat?.id === student.id 
+                                ${activeChat?.id === convo.id 
                                     ? 'bg-zinc-50/80' 
                                     : 'bg-white hover:bg-zinc-50/50'}
                             `}
                         >
                             <div className="relative">
-                                <img src={student.avatar} alt={student.name} className="w-12 h-12 rounded-full border border-zinc-200 bg-zinc-100" />
-                                {student.isOnline && (
+                                <img src={convo.avatar} alt={convo.name} className="w-12 h-12 rounded-full border border-zinc-200 bg-zinc-100" />
+                                {convo.chatType === 'private' && convo.isOnline && (
                                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-baseline mb-0.5">
-                                    <h3 className={`text-[14px] truncate ${isUnread ? 'font-black text-[#0f172a]' : 'font-bold text-[#0f172a]'}`}>{student.name}</h3>
+                                    <h3 className={`text-[14px] truncate ${isUnread ? 'font-black text-[#0f172a]' : 'font-bold text-[#0f172a]'}`}>{convo.name}</h3>
                                     {latestMsg && <span className={`text-[10px] font-medium ${isUnread ? 'text-emerald-600 font-bold' : 'text-zinc-400'}`}>{latestMsg.timestamp}</span>}
                                 </div>
                                 <p className={`text-[13px] truncate flex items-center gap-2 ${isUnread ? 'text-emerald-700 font-bold' : 'text-zinc-500 font-medium'}`}>
@@ -233,13 +250,17 @@ export default function PrivateChat() {
                     </button>
                     <div className="relative">
                         <img src={activeChat.avatar} alt={activeChat.name} className="w-10 h-10 rounded-full border border-zinc-200 bg-white" />
-                        {activeChat.isOnline && (
+                        {activeChat.chatType !== 'group' && activeChat.isOnline && (
                             <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
                         )}
                     </div>
                     <div className="flex-1">
                         <h3 className="text-[15px] font-bold text-[#0f172a]">{activeChat.name}</h3>
-                        <p className="text-[12px] text-zinc-500 font-medium">Active now</p>
+                        <p className="text-[12px] text-zinc-500 font-medium">
+                            {activeChat.chatType === 'group' 
+                                ? `${activeChat.members?.length || 0} Members`
+                                : 'Active now'}
+                        </p>
                     </div>
 
                     <div className="flex items-center gap-1 sm:gap-2">
@@ -297,19 +318,25 @@ export default function PrivateChat() {
                             </div>
                             {currentConversation.map((msg) => {
                                 const isMe = msg.senderId === currentUser.id;
+                                const sender = students.find(s => s.id === (msg.senderId?._id || msg.senderId)) || msg.senderInfo;
                                 const repliedMsg = msg.replyToId ? currentConversation.find(m => m.id === msg.replyToId) : null;
-                                const repliedSenderName = repliedMsg ? (repliedMsg.senderId === currentUser.id ? currentUser.name : activeChat.name) : null;
+                                const repliedSenderName = repliedMsg ? (repliedMsg.senderId === currentUser.id ? currentUser.name : (students.find(s => s.id === repliedMsg.senderId)?.name || 'Someone')) : null;
 
                                 return (
                                     <div
-                                        key={msg.id}
+                                        key={msg.id || msg._id}
                                         onClick={() => setActiveMenu(activeMenu === msg.id ? null : msg.id)}
-                                        className={`flex ${isMe ? 'justify-end' : 'justify-start'} cursor-pointer md:cursor-default`}
+                                        className={`flex ${isMe ? 'justify-end' : 'justify-start'} cursor-pointer md:cursor-default w-full`}
                                     >
                                         {!isMe && (
-                                            <img src={activeChat.avatar} className="w-8 h-8 rounded-full border border-zinc-200 mr-2 self-end mb-1" alt="" />
+                                            <div className="flex flex-col items-center mr-2 self-end mb-1">
+                                                <img src={activeChat.chatType === 'group' ? sender?.avatar : activeChat.avatar} className="w-8 h-8 rounded-full border border-zinc-200" alt="" />
+                                            </div>
                                         )}
-                                        <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                        <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[75%]`}>
+                                            {!isMe && activeChat.chatType === 'group' && (
+                                                <span className="text-[10px] font-bold text-zinc-500 ml-1 mb-0.5">{sender?.name}</span>
+                                            )}
                                             <div className="relative group/bubble">
                                                 {repliedMsg && repliedSenderName && (
                                                     <div className={`mb-1 p-2 rounded-lg text-xs border-l-4 ${isMe ? 'bg-[#1e293b]/20 border-zinc-500 text-[#0f172a]' : 'bg-black/5 border-zinc-300 text-zinc-500'}`}>
