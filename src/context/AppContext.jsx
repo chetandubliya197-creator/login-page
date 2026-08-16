@@ -516,6 +516,9 @@ export function AppProvider({ children }) {
   };
 
   const acceptConnectRequest = async (id) => {
+    // Optimistic UI update
+    setStudents(prev => prev.map(std => std.id === id ? { ...std, connectionStatus: 'connected' } : std));
+    setNotifications(prev => prev.filter(n => !( (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId === id || n.relatedUserId === id) )));
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/accept/${id}`, {
         method: 'POST',
@@ -528,13 +531,20 @@ export function AppProvider({ children }) {
       } else {
         const data = await res.json();
         showToast(data.message || 'Failed to accept request', 'error');
+        fetchStudents(); // Revert on failure
+        fetchNotifications();
       }
     } catch (e) {
       showToast('Network error', 'error');
+      fetchStudents();
+      fetchNotifications();
     }
   };
 
   const rejectConnectRequest = async (id) => {
+    // Optimistic UI update
+    setStudents(prev => prev.map(std => std.id === id ? { ...std, connectionStatus: 'not_connected' } : std));
+    setNotifications(prev => prev.filter(n => !( (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId === id || n.relatedUserId === id) )));
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/reject/${id}`, {
         method: 'POST',
@@ -546,9 +556,13 @@ export function AppProvider({ children }) {
         fetchNotifications();
       } else {
         showToast('Failed to reject request', 'error');
+        fetchStudents(); // Revert on failure
+        fetchNotifications();
       }
     } catch (e) {
       showToast('Network error', 'error');
+      fetchStudents();
+      fetchNotifications();
     }
   };
 
