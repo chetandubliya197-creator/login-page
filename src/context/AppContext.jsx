@@ -98,8 +98,10 @@ export function AppProvider({ children }) {
 
   const processMessage = (msg) => {
     if (!currentUser) return msg;
-    const otherUserId = msg.senderId === currentUser.id ? msg.conversationId : msg.senderId;
-    return { ...msg, text: decryptMessage(msg.text, currentUser.id, otherUserId) };
+    // Use senderId + receiverId directly (now always available) for reliable E2EE decryption
+    const senderId = String(msg.senderId?._id || msg.senderId);
+    const receiverId = String(msg.receiverId?._id || msg.receiverId);
+    return { ...msg, text: decryptMessage(msg.text, senderId, receiverId) };
   };
 
   const fetchPrivateMessages = useCallback(async () => {
@@ -280,8 +282,10 @@ export function AppProvider({ children }) {
       // Private message listeners
       socketRef.current.on('receive_private_message', (msg) => {
         setPrivateMessages(prev => {
-          const otherUserId = msg.senderId === currentUser.id ? msg.conversationId : msg.senderId;
-          const decryptedMsg = { ...msg, text: decryptMessage(msg.text, currentUser.id, otherUserId) };
+          // Use senderId + receiverId directly for reliable E2EE decryption
+          const senderId = String(msg.senderId?._id || msg.senderId);
+          const receiverId = String(msg.receiverId?._id || msg.receiverId);
+          const decryptedMsg = { ...msg, text: decryptMessage(msg.text, senderId, receiverId) };
           return [...prev, decryptedMsg];
         });
       });
@@ -289,8 +293,9 @@ export function AppProvider({ children }) {
       socketRef.current.on('update_private_message', (data) => {
         setPrivateMessages(prev => prev.map(msg => {
           if (msg.id === data.messageId) {
-            const otherUserId = msg.senderId === currentUser.id ? msg.conversationId : msg.senderId;
-            return { ...msg, text: decryptMessage(data.newText, currentUser.id, otherUserId), isEdited: data.isEdited };
+            const senderId = String(msg.senderId?._id || msg.senderId);
+            const receiverId = String(msg.receiverId?._id || msg.receiverId);
+            return { ...msg, text: decryptMessage(data.newText, senderId, receiverId), isEdited: data.isEdited };
           }
           return msg;
         }));
@@ -671,8 +676,10 @@ export function AppProvider({ children }) {
     if (!socketRef.current) return;
     const msg = privateMessages.find(m => m.id === id);
     if (!msg) return;
-    const receiverId = msg.senderId === currentUser.id ? msg.conversationId : msg.senderId;
-    const encryptedText = encryptMessage(newText.trim(), currentUser.id, receiverId);
+    // Use senderId + receiverId directly for consistent E2EE key
+    const senderId = String(msg.senderId?._id || msg.senderId);
+    const receiverId = String(msg.receiverId?._id || msg.receiverId);
+    const encryptedText = encryptMessage(newText.trim(), senderId, receiverId);
     socketRef.current.emit('edit_private_message', { messageId: id, newText: encryptedText });
   };
 

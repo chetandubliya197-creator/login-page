@@ -26,6 +26,7 @@ const getMyPrivateMessages = async (req, res) => {
         const formattedMessages = filteredMessages.map(msg => ({
             id: msg._id,
             senderId: msg.senderId,
+            receiverId: msg.receiverId, // IMPORTANT: always include for E2EE key
             conversationId: msg.senderId.toString() === req.user._id.toString() ? msg.receiverId : msg.senderId,
             text: msg.text,
             isEdited: msg.isEdited,

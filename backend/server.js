@@ -213,6 +213,7 @@ io.on('connection', async (socket) => {
             const formattedMsg = {
                 id: msg._id,
                 senderId: msg.senderId,
+                receiverId: msg.receiverId, // IMPORTANT: always include for E2EE key
                 conversationId: msg.senderId, // from receiver's perspective
                 text: msg.text,
                 isEdited: msg.isEdited,
