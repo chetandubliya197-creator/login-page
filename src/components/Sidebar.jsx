@@ -16,6 +16,7 @@ import {
   Menu as MenuIcon,
   X,
   Shield,
+  Lock,
   Download
 } from 'lucide-react';
 import { Activity, GraduationCap } from 'lucide-react'; // For the logo
@@ -276,6 +277,20 @@ export default function Sidebar({ onLogout }) {
                         <HelpCircle className="w-5 h-5" />
                     </span>
                     Help Center
+                </button>
+
+                <button 
+                    onClick={() => setActiveTab('privacy')}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-bold transition-all duration-200 w-full text-left group
+                        ${activeTab === 'privacy' 
+                            ? 'bg-emerald-50 text-emerald-600' 
+                            : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
+                        }`}
+                >
+                    <span className={`transition-transform duration-200 ${activeTab === 'privacy' ? 'scale-110' : 'group-hover:scale-105'}`}>
+                        <Lock className="w-5 h-5" />
+                    </span>
+                    Privacy & Terms
                 </button>
 
                 {deferredPrompt && (

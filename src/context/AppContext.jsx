@@ -1,6 +1,7 @@
 import React, { createContext, useState, useCallback, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { encryptMessage, decryptMessage } from '../utils/encryption';
 
 export const AppContext = createContext();
 
@@ -95,12 +96,21 @@ export function AppProvider({ children }) {
     }
   }, [currentUser?.token]);
 
+  const processMessage = (msg) => {
+    if (!currentUser) return msg;
+    const otherUserId = msg.senderId === currentUser.id ? msg.conversationId : msg.senderId;
+    return { ...msg, text: decryptMessage(msg.text, currentUser.id, otherUserId) };
+  };
+
   const fetchPrivateMessages = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/private-chat`, {
         headers: { Authorization: `Bearer ${currentUser.token}` }
       });
-      if (res.ok) setPrivateMessages(await res.json());
+      if (res.ok) {
+        const rawMsgs = await res.json();
+        setPrivateMessages(rawMsgs.map(processMessage));
+      }
     } catch (e) {
       console.error('Error fetching private messages', e);
     }
@@ -269,15 +279,21 @@ export function AppProvider({ children }) {
 
       // Private message listeners
       socketRef.current.on('receive_private_message', (msg) => {
-        setPrivateMessages(prev => [...prev, msg]);
+        setPrivateMessages(prev => {
+          const otherUserId = msg.senderId === currentUser.id ? msg.conversationId : msg.senderId;
+          const decryptedMsg = { ...msg, text: decryptMessage(msg.text, currentUser.id, otherUserId) };
+          return [...prev, decryptedMsg];
+        });
       });
 
       socketRef.current.on('update_private_message', (data) => {
-        setPrivateMessages(prev => prev.map(msg => 
-          msg.id === data.messageId 
-            ? { ...msg, text: data.newText, isEdited: data.isEdited }
-            : msg
-        ));
+        setPrivateMessages(prev => prev.map(msg => {
+          if (msg.id === data.messageId) {
+            const otherUserId = msg.senderId === currentUser.id ? msg.conversationId : msg.senderId;
+            return { ...msg, text: decryptMessage(data.newText, currentUser.id, otherUserId), isEdited: data.isEdited };
+          }
+          return msg;
+        }));
       });
 
       socketRef.current.on('private_message_deleted', (messageId) => {
@@ -647,12 +663,17 @@ export function AppProvider({ children }) {
         return;
     }
 
-    socketRef.current.emit('send_private_message', { receiverId, text: text.trim() });
+    const encryptedText = encryptMessage(text.trim(), currentUser.id, receiverId);
+    socketRef.current.emit('send_private_message', { receiverId, text: encryptedText });
   };
 
   const editPrivateMessage = (id, newText) => {
     if (!socketRef.current) return;
-    socketRef.current.emit('edit_private_message', { messageId: id, newText: newText.trim() });
+    const msg = privateMessages.find(m => m.id === id);
+    if (!msg) return;
+    const receiverId = msg.senderId === currentUser.id ? msg.conversationId : msg.senderId;
+    const encryptedText = encryptMessage(newText.trim(), currentUser.id, receiverId);
+    socketRef.current.emit('edit_private_message', { messageId: id, newText: encryptedText });
   };
 
   const deletePrivateMessage = (id) => {

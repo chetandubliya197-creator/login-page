@@ -16,6 +16,7 @@ import Toast from './components/Toast';
 import DashboardView from './components/DashboardView';
 import HelpCenterView from './components/HelpCenterView';
 import AdminPanel from './components/AdminPanel';
+import PrivacyPolicyView from './components/PrivacyPolicyView';
 
 function InnerApp() {
   const { currentUser, activeTab, setActiveTab, handleLogout, exitDummyMode } = useContext(AppContext);
@@ -73,6 +74,7 @@ function InnerApp() {
         {activeTab === 'messages' && <PrivateChat />}
         {activeTab === 'settings' && <SettingsView />}
         {activeTab === 'help' && <HelpCenterView />}
+        {activeTab === 'privacy' && <PrivacyPolicyView />}
         {activeTab === 'admin' && <AdminPanel />}
         <GlobalSearchModal
           isOpen={activeTab === 'search'}
