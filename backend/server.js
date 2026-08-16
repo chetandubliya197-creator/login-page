@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const http = require('http');
@@ -24,7 +25,7 @@ const io = new Server(server, {
     }
 });
 
-// CORS first
+// CORS first — always before security middleware
 app.use(cors({
     origin: function (origin, callback) {
         callback(null, true);
@@ -32,11 +33,27 @@ app.use(cors({
     credentials: true
 }));
 
-// Basic security headers (manual, no third-party package needed)
+// Helmet — secure HTTP headers, CSP disabled so frontend APIs work normally
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false,
+}));
+
+// Manual NoSQL Sanitizer — strips $ and . from request body keys (no package needed)
+const sanitizeBody = (obj) => {
+    if (obj && typeof obj === 'object') {
+        Object.keys(obj).forEach(key => {
+            if (key.startsWith('$') || key.includes('.')) {
+                delete obj[key];
+            } else {
+                sanitizeBody(obj[key]);
+            }
+        });
+    }
+};
 app.use((req, res, next) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
+    if (req.body) sanitizeBody(req.body);
     next();
 });
 
