@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { Search, ChevronLeft, Calendar, Share2, MapPin, Users } from 'lucide-react';
+import { Search, ChevronLeft, Calendar, Share2, MapPin, Users, ChevronDown } from 'lucide-react';
 
 const TABS = ['All Societies', 'Academic', 'Arts & Culture', 'Sports', 'Technology'];
 
@@ -8,6 +8,7 @@ export default function SocietyHub() {
   const { currentUser, societies, toggleSocietyJoin, createAnnouncement } = useContext(AppContext);
   
   const [activeTab, setActiveTab] = useState('All Societies');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSociety, setSelectedSociety] = useState(null);
   const [detailTab, setDetailTab] = useState('About');
@@ -270,21 +271,42 @@ export default function SocietyHub() {
               </div>
           </div>
 
-          <div className="flex items-center justify-between gap-3 mt-8 pb-2">
-              <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
-                  {TABS.map(tab => (
-                      <button 
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold transition-all
-                            ${activeTab === tab 
-                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/50 shadow-sm' 
-                                : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-800'
-                            }`}
-                      >
-                          {tab}
-                      </button>
-                  ))}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-8 pb-2 relative z-20">
+              <div className="relative w-full sm:w-64">
+                  <button 
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="flex items-center justify-between w-full px-5 py-3 rounded-2xl bg-white border border-zinc-200 shadow-sm text-sm font-bold text-zinc-800 hover:bg-zinc-50 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  >
+                      {activeTab}
+                      <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isDropdownOpen && (
+                      <>
+                          <div 
+                              className="fixed inset-0 z-20" 
+                              onClick={() => setIsDropdownOpen(false)}
+                          />
+                          <div className="absolute top-full left-0 mt-2 w-full bg-white border border-zinc-200 rounded-2xl shadow-xl overflow-hidden py-2 z-30 animate-in fade-in slide-in-from-top-2 duration-200">
+                              {TABS.map(tab => (
+                                  <button 
+                                    key={tab}
+                                    onClick={() => {
+                                        setActiveTab(tab);
+                                        setIsDropdownOpen(false);
+                                    }}
+                                    className={`w-full text-left px-5 py-3 text-sm font-bold transition-colors
+                                        ${activeTab === tab 
+                                            ? 'bg-emerald-50 text-emerald-600' 
+                                            : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                                        }`}
+                                  >
+                                      {tab}
+                                  </button>
+                              ))}
+                          </div>
+                      </>
+                  )}
               </div>
               {currentUser?.role === 'admin' && (
                   <button 
