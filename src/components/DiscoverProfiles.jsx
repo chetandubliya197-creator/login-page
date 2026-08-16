@@ -120,7 +120,14 @@ export default function DiscoverProfiles() {
             {filteredStudents.map((student) => {
               const hasReceivedRequest = notifications?.some(n => 
                 (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && 
-                (n.senderId === student.id || n.relatedUserId === student.id)
+                (
+                  n.senderId === student.id || 
+                  n.relatedUserId === student.id || 
+                  n.userId === student.id || 
+                  n.fromUserId === student.id ||
+                  (n.message && student.name && n.message.includes(student.name)) ||
+                  (n.message && student.anonUsername && n.message.includes(student.anonUsername))
+                )
               );
               const isConnected = student.connectionStatus === 'connected';
               const isPending = student.connectionStatus === 'pending' && !hasReceivedRequest;

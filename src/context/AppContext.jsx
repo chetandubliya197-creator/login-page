@@ -516,9 +516,10 @@ export function AppProvider({ children }) {
   };
 
   const acceptConnectRequest = async (id) => {
+    const student = students.find(s => s.id === id);
     // Optimistic UI update
     setStudents(prev => prev.map(std => std.id === id ? { ...std, connectionStatus: 'connected' } : std));
-    setNotifications(prev => prev.filter(n => !( (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId === id || n.relatedUserId === id) )));
+    setNotifications(prev => prev.filter(n => !( (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId === id || n.relatedUserId === id || n.userId === id || n.fromUserId === id || (student && n.message && (n.message.includes(student.name) || n.message.includes(student.anonUsername)))) )));
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/accept/${id}`, {
         method: 'POST',
@@ -542,9 +543,10 @@ export function AppProvider({ children }) {
   };
 
   const rejectConnectRequest = async (id) => {
+    const student = students.find(s => s.id === id);
     // Optimistic UI update
     setStudents(prev => prev.map(std => std.id === id ? { ...std, connectionStatus: 'not_connected' } : std));
-    setNotifications(prev => prev.filter(n => !( (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId === id || n.relatedUserId === id) )));
+    setNotifications(prev => prev.filter(n => !( (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId === id || n.relatedUserId === id || n.userId === id || n.fromUserId === id || (student && n.message && (n.message.includes(student.name) || n.message.includes(student.anonUsername)))) )));
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/reject/${id}`, {
         method: 'POST',
