@@ -3,7 +3,7 @@ import { Shield, Lock, FileText, AlertTriangle } from 'lucide-react';
 
 export default function PrivacyPolicyView() {
   return (
-    <div className="flex-1 overflow-y-auto bg-zinc-50 pt-[53px] md:pt-0">
+    <div className="h-full overflow-y-auto bg-zinc-50 pt-[53px] md:pt-0 pb-[60px] md:pb-0">
       <div className="max-w-3xl mx-auto p-6 md:p-8 space-y-8">
         
         <div className="text-center space-y-4 mb-10">
