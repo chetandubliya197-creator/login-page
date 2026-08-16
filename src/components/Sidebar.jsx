@@ -185,6 +185,27 @@ export default function Sidebar({ onLogout }) {
         <div className="flex-1 overflow-y-auto py-4 px-4 flex flex-col gap-2">
 
             <nav className="flex flex-col gap-1">
+                {/* Desktop Search & Notifications (Visible on md and above) */}
+                <div className="hidden md:flex gap-2 mb-2">
+                    <button 
+                        onClick={() => setActiveTab('search')}
+                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-[13px] transition-colors border shadow-sm ${activeTab === 'search' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-600 hover:text-zinc-900'}`}
+                    >
+                        <Search className="w-4 h-4" />
+                        Search
+                    </button>
+                    <button 
+                        onClick={handleNotificationClick}
+                        className={`relative flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-[13px] transition-colors border shadow-sm ${showNotifications ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-600 hover:text-zinc-900'}`}
+                    >
+                        <Bell className="w-4 h-4" />
+                        Alerts
+                        {unreadCount > 0 && (
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse border border-white"></span>
+                        )}
+                    </button>
+                </div>
+
                 {NAV_ITEMS.map((item) => (
                     <button
                         key={item.id}
