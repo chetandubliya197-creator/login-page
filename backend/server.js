@@ -1,9 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const http = require('http');
@@ -27,7 +24,7 @@ const io = new Server(server, {
     }
 });
 
-// CORS must come first before any security middleware
+// CORS first
 app.use(cors({
     origin: function (origin, callback) {
         callback(null, true);
@@ -35,31 +32,33 @@ app.use(cors({
     credentials: true
 }));
 
-// Security Middlewares - helmet configured to NOT break cross-origin API calls
-app.use(helmet({
-    crossOriginResourcePolicy: false,      // Allow cross-origin resource loading
-    crossOriginOpenerPolicy: false,        // Don't block popups/auth flows
-    contentSecurityPolicy: false,          // Don't block frontend JS/CSS/API calls
-}));
-app.use(mongoSanitize()); // Prevent NoSQL injection attacks
-
-// Rate Limiting
-const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000,
-    message: 'Too many requests from this IP, please try again after 15 minutes',
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-app.use('/api', globalLimiter);
-
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 20,
-    message: 'Too many authentication attempts, please try again later',
+// Basic security headers (manual, no third-party package needed)
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
 });
 
-// Body parser - increased limit for profile photos & post attachments
+// Simple in-memory rate limiter for auth routes
+const authAttempts = new Map();
+const authRateLimit = (req, res, next) => {
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    const now = Date.now();
+    const windowMs = 15 * 60 * 1000;
+    const maxAttempts = 20;
+    const record = authAttempts.get(ip) || { count: 0, startTime: now };
+    if (now - record.startTime > windowMs) {
+        authAttempts.set(ip, { count: 1, startTime: now });
+    } else if (record.count >= maxAttempts) {
+        return res.status(429).json({ message: 'Too many attempts, please try again later.' });
+    } else {
+        authAttempts.set(ip, { count: record.count + 1, startTime: record.startTime });
+    }
+    next();
+};
+
+// Body parser - 10mb limit for photos & attachments
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -78,7 +77,7 @@ app.get('/ping', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authLimiter, require('./routes/auth.routes'));
+app.use('/api/auth', authRateLimit, require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/chat', require('./routes/chat.routes'));
 app.use('/api/private-chat', require('./routes/privateChat.routes'));
