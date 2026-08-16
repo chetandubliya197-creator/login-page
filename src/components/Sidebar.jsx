@@ -40,7 +40,8 @@ export default function Sidebar({ onLogout }) {
     setIsMobileMenuOpen(false);
   }, [activeTab]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const displayNotifications = notifications.filter(n => n.type !== 'connection_request' && (!n.message || !n.message.toLowerCase().includes('request')));
+  const unreadCount = displayNotifications.filter(n => !n.read).length;
 
   const handleNotificationClick = () => {
       setShowNotifications(!showNotifications);
@@ -116,19 +117,13 @@ export default function Sidebar({ onLogout }) {
       {showNotifications && (
           <div className="md:hidden fixed top-[53px] right-0 w-full sm:w-80 bg-white border-b sm:border border-zinc-200 shadow-xl z-40 max-h-80 overflow-y-auto">
               <div className="p-3 border-b border-zinc-100 font-bold text-sm text-zinc-950">Notifications</div>
-              {notifications.length === 0 ? (
+              {displayNotifications.length === 0 ? (
                   <div className="p-4 text-xs text-zinc-500 text-center font-medium">No notifications</div>
               ) : (
-                  notifications.map(n => (
+                  displayNotifications.map(n => (
                       <div key={n.id} className="p-3 border-b border-zinc-100 last:border-0 flex flex-col gap-1 hover:bg-zinc-50">
                           <span className="text-sm font-medium text-zinc-800">{n.message}</span>
                           <span className="text-[10px] text-zinc-500 font-medium">{n.time}</span>
-                          {(n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId || n.relatedUserId) && (
-                              <div className="flex items-center gap-2 mt-1">
-                                  <button onClick={(e) => { e.stopPropagation(); acceptConnectRequest(n.senderId || n.relatedUserId); setShowNotifications(false); }} className="px-3 py-1.5 bg-emerald-500 text-white text-[11px] font-bold rounded-lg hover:bg-emerald-600 transition-colors flex-1">Accept</button>
-                                  <button onClick={(e) => { e.stopPropagation(); rejectConnectRequest(n.senderId || n.relatedUserId); setShowNotifications(false); }} className="px-3 py-1.5 bg-rose-500 text-white text-[11px] font-bold rounded-lg hover:bg-rose-600 transition-colors flex-1">Reject</button>
-                              </div>
-                          )}
                       </div>
                   ))
               )}
@@ -174,19 +169,13 @@ export default function Sidebar({ onLogout }) {
         {showNotifications && (
             <div className="absolute top-[80px] left-full ml-2 w-80 bg-white border border-zinc-200 rounded-2xl shadow-xl z-50 max-h-96 overflow-y-auto overflow-hidden">
                 <div className="p-4 border-b border-zinc-100 font-bold text-sm bg-zinc-50/50 text-zinc-950">Notifications</div>
-                {notifications.length === 0 ? (
+                {displayNotifications.length === 0 ? (
                     <div className="p-6 text-xs text-zinc-500 text-center font-medium">No notifications</div>
                 ) : (
-                    notifications.map(n => (
+                    displayNotifications.map(n => (
                         <div key={n.id} className="p-4 border-b border-zinc-100 last:border-0 flex flex-col gap-1 hover:bg-zinc-50 cursor-pointer transition-colors">
                             <span className="text-sm font-medium text-zinc-800">{n.message}</span>
                             <span className="text-[11px] text-zinc-400 font-semibold">{n.time}</span>
-                            {(n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId || n.relatedUserId) && (
-                                <div className="flex items-center gap-2 mt-2">
-                                    <button onClick={(e) => { e.stopPropagation(); acceptConnectRequest(n.senderId || n.relatedUserId); setShowNotifications(false); }} className="px-4 py-1.5 bg-emerald-500 text-white text-[12px] font-bold rounded-lg hover:bg-emerald-600 transition-colors flex-1">Accept</button>
-                                    <button onClick={(e) => { e.stopPropagation(); rejectConnectRequest(n.senderId || n.relatedUserId); setShowNotifications(false); }} className="px-4 py-1.5 bg-rose-500 text-white text-[12px] font-bold rounded-lg hover:bg-rose-600 transition-colors flex-1">Reject</button>
-                                </div>
-                            )}
                         </div>
                     ))
                 )}

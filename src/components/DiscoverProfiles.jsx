@@ -18,7 +18,7 @@ const STATUS_CONFIG = {
 };
 
 export default function DiscoverProfiles() {
-  const { currentUser, students, sendConnectRequest, reportUser, blockUser } = useContext(AppContext);
+  const { currentUser, students, sendConnectRequest, reportUser, blockUser, notifications, acceptConnectRequest, rejectConnectRequest } = useContext(AppContext);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBranch, setFilterBranch] = useState('All');
@@ -118,9 +118,13 @@ export default function DiscoverProfiles() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredStudents.map((student) => {
+              const hasReceivedRequest = notifications?.some(n => 
+                (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && 
+                (n.senderId === student.id || n.relatedUserId === student.id)
+              );
               const isConnected = student.connectionStatus === 'connected';
-              const isPending = student.connectionStatus === 'pending';
-              const statusCfg = STATUS_CONFIG[student.connectionStatus];
+              const isPending = student.connectionStatus === 'pending' && !hasReceivedRequest;
+              const statusCfg = STATUS_CONFIG[hasReceivedRequest ? 'not_connected' : student.connectionStatus];
               const isMenuOpen = activeMenu === student.id;
 
               return (
@@ -226,13 +230,30 @@ export default function DiscoverProfiles() {
                     </div>
                   )}
 
-                  <button
-                    onClick={() => sendConnectRequest(student.id)}
-                    disabled={isPending}
-                    className={`mt-auto w-full py-3 rounded-xl text-[13px] font-bold border transition-all duration-300 ${statusCfg.style}`}
-                  >
-                    {statusCfg.label}
-                  </button>
+                  {hasReceivedRequest ? (
+                    <div className="mt-auto flex items-center gap-2">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); acceptConnectRequest(student.id); }}
+                            className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[13px] font-bold transition-all duration-300 shadow-sm"
+                        >
+                            Accept
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); rejectConnectRequest(student.id); }}
+                            className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-[13px] font-bold transition-all duration-300 shadow-sm"
+                        >
+                            Reject
+                        </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => sendConnectRequest(student.id)}
+                      disabled={isPending}
+                      className={`mt-auto w-full py-3 rounded-xl text-[13px] font-bold border transition-all duration-300 ${statusCfg.style}`}
+                    >
+                      {statusCfg.label}
+                    </button>
+                  )}
                 </div>
               );
             })}
