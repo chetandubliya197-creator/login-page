@@ -118,7 +118,8 @@ export default function DiscoverProfiles() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredStudents.map((student) => {
-              const hasReceivedRequest = notifications?.some(n => 
+              const isConnected = student.connectionStatus === 'connected';
+              const hasReceivedRequest = !isConnected && notifications?.some(n => 
                 (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && 
                 (
                   n.senderId === student.id || 
@@ -129,7 +130,6 @@ export default function DiscoverProfiles() {
                   (n.message && student.anonUsername && n.message.includes(student.anonUsername))
                 )
               );
-              const isConnected = student.connectionStatus === 'connected';
               const isPending = student.connectionStatus === 'pending' && !hasReceivedRequest;
               const statusCfg = STATUS_CONFIG[hasReceivedRequest ? 'not_connected' : student.connectionStatus];
               const isMenuOpen = activeMenu === student.id;
