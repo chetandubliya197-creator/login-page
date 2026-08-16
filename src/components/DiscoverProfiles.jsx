@@ -181,82 +181,84 @@ export default function DiscoverProfiles() {
                     ${isConnected ? 'border-emerald-200' : 'border-zinc-200'}`}
                 >
 
-                  <div className="absolute top-4 right-4 flex items-center gap-2">
-                    {isConnected && (
-                      <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold uppercase tracking-wider shadow-sm">
-                        Connected
-                      </span>
-                    )}
-                    {isPending && (
-                      <span className="text-[10px] px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-bold uppercase tracking-wider shadow-sm">
-                        Pending
-                      </span>
-                    )}
-                    
-                    <div className="relative">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setActiveMenu(isMenuOpen ? null : student.id); }}
-                        className="p-1 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors"
-                      >
-                        <MoreVertical className="w-5 h-5" />
-                      </button>
+                  <div className="flex items-start justify-between w-full">
+                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0 pr-2">
+                      <div className="relative shrink-0">
+                        <img
+                          src={
+                            isConnected
+                              ? student.avatar
+                              : `https://api.dicebear.com/7.x/bottts/svg?seed=${student.anonUsername}`
+                          }
+                          alt={isConnected ? student.name : student.anonUsername}
+                          className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl border-2 shadow-sm ${
+                            isConnected ? 'border-emerald-200 bg-emerald-50' : 'border-zinc-200 bg-zinc-50'
+                          }`}
+                        />
 
-                      {isMenuOpen && (
-                        <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-zinc-200 rounded-xl shadow-lg py-1 z-50 overflow-hidden">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); reportUser(student.id); setActiveMenu(null); }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
-                          >
-                            <Flag className="w-3.5 h-3.5" />
-                            Report User
-                          </button>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); blockUser(student.id); setActiveMenu(null); }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
-                          >
-                            <Ban className="w-3.5 h-3.5" />
-                            Block User
-                          </button>
-                        </div>
-                      )}
+                        {isConnected && student.isOnline && (
+                          <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
+                        )}
+
+                        {!isConnected && (
+                          <span className="absolute -bottom-1.5 -right-1.5 bg-white rounded-full p-1 border border-zinc-200 shadow-sm">
+                            <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-black text-zinc-950 text-[16px] md:text-lg tracking-tight truncate">
+                          {isConnected ? student.name : student.anonUsername}
+                        </p>
+                        <p className="text-[12px] md:text-[13px] font-bold text-zinc-500 mt-0.5 truncate">{student.branch} · {student.year}</p>
+                        {!isConnected && (
+                          <p className="text-[10px] text-amber-600 font-bold mt-1 uppercase tracking-wider">Real name hidden</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-4 mt-2">
-                    <div className="relative">
-                      <img
-                        src={
-                          isConnected
-                            ? student.avatar
-                            : `https://api.dicebear.com/7.x/bottts/svg?seed=${student.anonUsername}`
-                        }
-                        alt={isConnected ? student.name : student.anonUsername}
-                        className={`w-16 h-16 rounded-2xl border-2 shadow-sm ${
-                          isConnected ? 'border-emerald-200 bg-emerald-50' : 'border-zinc-200 bg-zinc-50'
-                        }`}
-                      />
-
-                      {isConnected && student.isOnline && (
-                        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></span>
-                      )}
-
-                      {!isConnected && (
-                        <span className="absolute -bottom-1.5 -right-1.5 bg-white rounded-full p-1 border border-zinc-200 shadow-sm">
-                          <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                          </svg>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {isConnected && (
+                        <span className="text-[9px] md:text-[10px] px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold uppercase tracking-wider shadow-sm hidden sm:inline-block">
+                          Connected
                         </span>
                       )}
-                    </div>
-
-                    <div>
-                      <p className="font-black text-zinc-950 text-lg tracking-tight pr-6">
-                        {isConnected ? student.name : student.anonUsername}
-                      </p>
-                      <p className="text-[13px] font-bold text-zinc-500 mt-0.5">{student.branch} · {student.year}</p>
-                      {!isConnected && (
-                        <p className="text-[10px] text-amber-600 font-bold mt-1 uppercase tracking-wider">Real name hidden</p>
+                      {isPending && (
+                        <span className="text-[9px] md:text-[10px] px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-bold uppercase tracking-wider shadow-sm hidden sm:inline-block">
+                          Pending
+                        </span>
                       )}
+                      
+                      <div className="relative">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setActiveMenu(isMenuOpen ? null : student.id); }}
+                          className="p-1 rounded-full hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors"
+                        >
+                          <MoreVertical className="w-5 h-5" />
+                        </button>
+
+                        {isMenuOpen && (
+                          <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-zinc-200 rounded-xl shadow-lg py-1 z-50 overflow-hidden">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); reportUser(student.id); setActiveMenu(null); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
+                            >
+                              <Flag className="w-3.5 h-3.5" />
+                              Report User
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); blockUser(student.id); setActiveMenu(null); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                            >
+                              <Ban className="w-3.5 h-3.5" />
+                              Block User
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
