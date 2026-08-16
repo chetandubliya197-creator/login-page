@@ -31,7 +31,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ onLogout }) {
-  const { currentUser, activeTab, setActiveTab, notifications, markNotificationsAsRead, unreadPrivateCount, deferredPrompt, installPWA } = useContext(AppContext);
+  const { currentUser, activeTab, setActiveTab, notifications, markNotificationsAsRead, unreadPrivateCount, deferredPrompt, installPWA, acceptConnectRequest, rejectConnectRequest } = useContext(AppContext);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -123,6 +123,12 @@ export default function Sidebar({ onLogout }) {
                       <div key={n.id} className="p-3 border-b border-zinc-100 last:border-0 flex flex-col gap-1 hover:bg-zinc-50">
                           <span className="text-sm font-medium text-zinc-800">{n.message}</span>
                           <span className="text-[10px] text-zinc-500 font-medium">{n.time}</span>
+                          {(n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId || n.relatedUserId) && (
+                              <div className="flex items-center gap-2 mt-1">
+                                  <button onClick={(e) => { e.stopPropagation(); acceptConnectRequest(n.senderId || n.relatedUserId); setShowNotifications(false); }} className="px-3 py-1.5 bg-emerald-500 text-white text-[11px] font-bold rounded-lg hover:bg-emerald-600 transition-colors flex-1">Accept</button>
+                                  <button onClick={(e) => { e.stopPropagation(); rejectConnectRequest(n.senderId || n.relatedUserId); setShowNotifications(false); }} className="px-3 py-1.5 bg-rose-500 text-white text-[11px] font-bold rounded-lg hover:bg-rose-600 transition-colors flex-1">Reject</button>
+                              </div>
+                          )}
                       </div>
                   ))
               )}
@@ -175,6 +181,12 @@ export default function Sidebar({ onLogout }) {
                         <div key={n.id} className="p-4 border-b border-zinc-100 last:border-0 flex flex-col gap-1 hover:bg-zinc-50 cursor-pointer transition-colors">
                             <span className="text-sm font-medium text-zinc-800">{n.message}</span>
                             <span className="text-[11px] text-zinc-400 font-semibold">{n.time}</span>
+                            {(n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && (n.senderId || n.relatedUserId) && (
+                                <div className="flex items-center gap-2 mt-2">
+                                    <button onClick={(e) => { e.stopPropagation(); acceptConnectRequest(n.senderId || n.relatedUserId); setShowNotifications(false); }} className="px-4 py-1.5 bg-emerald-500 text-white text-[12px] font-bold rounded-lg hover:bg-emerald-600 transition-colors flex-1">Accept</button>
+                                    <button onClick={(e) => { e.stopPropagation(); rejectConnectRequest(n.senderId || n.relatedUserId); setShowNotifications(false); }} className="px-4 py-1.5 bg-rose-500 text-white text-[12px] font-bold rounded-lg hover:bg-rose-600 transition-colors flex-1">Reject</button>
+                                </div>
+                            )}
                         </div>
                     ))
                 )}
