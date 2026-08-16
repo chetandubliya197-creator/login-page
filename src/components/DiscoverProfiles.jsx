@@ -160,15 +160,7 @@ export default function DiscoverProfiles() {
             {filteredStudents.map((student) => {
               const isConnected = student.connectionStatus === 'connected';
               const hasReceivedRequest = !isConnected && notifications?.some(n => 
-                (n.type === 'connection_request' || (n.message && n.message.toLowerCase().includes('request'))) && 
-                (
-                  n.senderId === student.id || 
-                  n.relatedUserId === student.id || 
-                  n.userId === student.id || 
-                  n.fromUserId === student.id ||
-                  (n.message && student.name && n.message.includes(student.name)) ||
-                  (n.message && student.anonUsername && n.message.includes(student.anonUsername))
-                )
+                n.type === 'connection_request' && n.senderId === student.id
               );
               const isPending = student.connectionStatus === 'pending' && !hasReceivedRequest;
               const statusCfg = STATUS_CONFIG[hasReceivedRequest ? 'not_connected' : student.connectionStatus];
@@ -296,8 +288,12 @@ export default function DiscoverProfiles() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => sendConnectRequest(student.id)}
-                      disabled={isPending}
+                      onClick={() => {
+                        if (!isConnected && !isPending) {
+                          sendConnectRequest(student.id);
+                        }
+                      }}
+                      disabled={isPending || isConnected}
                       className={`mt-auto w-full py-3 rounded-xl text-[13px] font-bold border transition-all duration-300 ${statusCfg.style}`}
                     >
                       {statusCfg.label}
