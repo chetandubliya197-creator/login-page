@@ -9,6 +9,7 @@ export default function PrivateChat() {
   const [searchQuery, setSearchQuery] = useState('');
   const [attachment, setAttachment] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(null);
   
   const [replyingTo, setReplyingTo] = useState(null);
   const [editingMsg, setEditingMsg] = useState(null);
