@@ -27,4 +27,7 @@ const privateMessageSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// TTL Index: Delete documents 30 days (2592000 seconds) after their creation
+privateMessageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 30 * 24 * 60 * 60 });
+
 module.exports = mongoose.model('PrivateMessage', privateMessageSchema);

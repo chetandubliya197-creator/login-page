@@ -1,6 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const http = require('http');
@@ -24,8 +27,28 @@ const io = new Server(server, {
     }
 });
 
-// Middleware
-app.use(express.json());
+// Security Middlewares
+app.use(helmet()); // Secure HTTP headers
+app.use(mongoSanitize()); // Prevent NoSQL injection attacks
+
+// Rate Limiting
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // Limit each IP to 1000 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api', globalLimiter); // Apply to all API routes
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // Limit each IP to 20 login/register requests
+    message: 'Too many authentication attempts, please try again later',
+});
+
+// Basic Middleware
+app.use(express.json({ limit: '10kb' })); // Body parser with limit
 app.use(cookieParser());
 app.use(cors({
     origin: function (origin, callback) {
@@ -48,7 +71,7 @@ app.get('/ping', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/auth', authLimiter, require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/chat', require('./routes/chat.routes'));
 app.use('/api/private-chat', require('./routes/privateChat.routes'));
