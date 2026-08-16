@@ -3,7 +3,7 @@ import { AppContext } from '../context/AppContext';
 import { Send, User, Paperclip, X, FileText, ArrowLeft, MoreVertical, Flag, Ban, Search, Phone, Video, Smile, MessageSquareText, Reply, Edit2, Trash2, ChevronDown, Check } from 'lucide-react';
 
 export default function PrivateChat() {
-  const { currentUser, students, privateMessages, sendPrivateMessage, editPrivateMessage, deletePrivateMessage, reportUser, blockUser, markPrivateConversationAsRead, groups, groupMessages, sendGroupMessage } = useContext(AppContext);
+  const { currentUser, students, privateMessages, sendPrivateMessage, editPrivateMessage, deletePrivateMessage, reportUser, blockUser, markPrivateConversationAsRead, groups, groupMessages, sendGroupMessage, leaveGroup, deleteGroup } = useContext(AppContext);
   const [activeChat, setActiveChat] = useState(null); 
   const [inputText, setInputText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -281,20 +281,56 @@ export default function PrivateChat() {
 
                             {isMenuOpen && (
                                 <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-zinc-200 rounded-xl shadow-lg py-1 z-50 overflow-hidden">
-                                    <button 
-                                        onClick={() => { reportUser(activeChat.id); setIsMenuOpen(false); }}
-                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
-                                    >
-                                        <Flag className="w-3.5 h-3.5" />
-                                        Report User
-                                    </button>
-                                    <button 
-                                        onClick={() => { blockUser(activeChat.id); setIsMenuOpen(false); }}
-                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
-                                    >
-                                        <Ban className="w-3.5 h-3.5" />
-                                        Block User
-                                    </button>
+                                    {activeChat.chatType === 'group' ? (
+                                        <>
+                                            {(activeChat.createdBy === currentUser.id || activeChat.admins?.includes(currentUser.id)) ? (
+                                                <button 
+                                                    onClick={async () => {
+                                                        const success = await deleteGroup(activeChat.id);
+                                                        if (success) {
+                                                            setActiveChat(null);
+                                                            setIsMenuOpen(false);
+                                                        }
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    Delete Group
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    onClick={async () => {
+                                                        const success = await leaveGroup(activeChat.id);
+                                                        if (success) {
+                                                            setActiveChat(null);
+                                                            setIsMenuOpen(false);
+                                                        }
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
+                                                >
+                                                    <Ban className="w-3.5 h-3.5" />
+                                                    Leave Group
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button 
+                                                onClick={() => { reportUser(activeChat.id); setIsMenuOpen(false); }}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-colors"
+                                            >
+                                                <Flag className="w-3.5 h-3.5" />
+                                                Report User
+                                            </button>
+                                            <button 
+                                                onClick={() => { blockUser(activeChat.id); setIsMenuOpen(false); }}
+                                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                                            >
+                                                <Ban className="w-3.5 h-3.5" />
+                                                Block User
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>

@@ -182,6 +182,42 @@ export function AppProvider({ children }) {
     }
   };
 
+  const leaveGroup = async (groupId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}/leave`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        setGroups(prev => prev.filter(g => g._id !== groupId));
+        showToast('Left group successfully', 'success');
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Error leaving group', e);
+      return false;
+    }
+  };
+
+  const deleteGroup = async (groupId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${currentUser.token}` }
+      });
+      if (res.ok) {
+        setGroups(prev => prev.filter(g => g._id !== groupId));
+        showToast('Group deleted successfully', 'success');
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Error deleting group', e);
+      return false;
+    }
+  };
+
   const fetchSocieties = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/societies`, {
@@ -882,6 +918,8 @@ export function AppProvider({ children }) {
         createGroup,
         sendGroupMessage,
         fetchGroupMessages,
+        leaveGroup,
+        deleteGroup,
         unreadPrivateCount,
         toast,
         showToast,

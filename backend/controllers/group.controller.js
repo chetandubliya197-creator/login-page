@@ -63,3 +63,49 @@ exports.getGroupMessages = async (req, res) => {
         res.status(500).json({ message: 'Error fetching group messages' });
     }
 };
+
+exports.leaveGroup = async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        const group = await GroupChat.findById(groupId);
+        
+        if (!group) return res.status(404).json({ message: 'Group not found' });
+        
+        // Remove user from members
+        group.members = group.members.filter(m => m.toString() !== req.user._id.toString());
+        
+        if (group.members.length === 0) {
+            // Delete group if no members left
+            await GroupChat.findByIdAndDelete(groupId);
+            await GroupMessage.deleteMany({ groupId });
+            return res.status(200).json({ message: 'Group deleted as it has no members left', deleted: true });
+        }
+        
+        await group.save();
+        res.status(200).json({ message: 'Successfully left group', group });
+    } catch (error) {
+        console.error('Leave group error:', error);
+        res.status(500).json({ message: 'Error leaving group' });
+    }
+};
+
+exports.deleteGroup = async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        const group = await GroupChat.findById(groupId);
+        
+        if (!group) return res.status(404).json({ message: 'Group not found' });
+        
+        if (group.createdBy.toString() !== req.user._id.toString() && !group.admins.includes(req.user._id)) {
+            return res.status(403).json({ message: 'Only admins can delete the group' });
+        }
+        
+        await GroupChat.findByIdAndDelete(groupId);
+        await GroupMessage.deleteMany({ groupId });
+        
+        res.status(200).json({ message: 'Group deleted successfully' });
+    } catch (error) {
+        console.error('Delete group error:', error);
+        res.status(500).json({ message: 'Error deleting group' });
+    }
+};
