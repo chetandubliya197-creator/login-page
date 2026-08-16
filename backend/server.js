@@ -27,35 +27,42 @@ const io = new Server(server, {
     }
 });
 
-// Security Middlewares
-app.use(helmet()); // Secure HTTP headers
-app.use(mongoSanitize()); // Prevent NoSQL injection attacks
-
-// Rate Limiting
-const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Limit each IP to 1000 requests per windowMs
-    message: 'Too many requests from this IP, please try again after 15 minutes',
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-app.use('/api', globalLimiter); // Apply to all API routes
-
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 20, // Limit each IP to 20 login/register requests
-    message: 'Too many authentication attempts, please try again later',
-});
-
-// Basic Middleware
-app.use(express.json({ limit: '10kb' })); // Body parser with limit
-app.use(cookieParser());
+// CORS must come first before any security middleware
 app.use(cors({
     origin: function (origin, callback) {
         callback(null, true);
     },
     credentials: true
 }));
+
+// Security Middlewares - helmet configured to NOT break cross-origin API calls
+app.use(helmet({
+    crossOriginResourcePolicy: false,      // Allow cross-origin resource loading
+    crossOriginOpenerPolicy: false,        // Don't block popups/auth flows
+    contentSecurityPolicy: false,          // Don't block frontend JS/CSS/API calls
+}));
+app.use(mongoSanitize()); // Prevent NoSQL injection attacks
+
+// Rate Limiting
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000,
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api', globalLimiter);
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20,
+    message: 'Too many authentication attempts, please try again later',
+});
+
+// Body parser - increased limit for profile photos & post attachments
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // Serve static files (admin avatar, etc.)
 app.use('/public', express.static('public'));
